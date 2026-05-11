@@ -2,37 +2,22 @@
 
 A browser-based per-key RGB tool for the **MK1300 V2 60% keyboard** — 90 static patterns, no bloated software required.
 
-> **Live:** [your-username.github.io/mk1300-rgb](https://your-username.github.io/mk1300-rgb) *(update link)*
+> **Live:** [kickTROLL.github.io/mk1300v2_rgb](https://kickTROLL.github.io/mk1300v2_rgb) *(update link)*
 
 ---
 
 ## ⚠️ Requirements
 
 - **Chrome or Edge** (WebHID API required — Firefox not supported)
-- Must launch browser with the flag below (one-time setup)
-- Close the official MK1300 software before connecting
-
----
-
-## Setup (one-time)
-
-Chrome blocks vendor HID interfaces by default. You need to launch it with:
-
-**Windows:**
-```
-"C:\Program Files\Google\Chrome\Application\chrome.exe" --disable-hid-blocklist
-```
-
-**Tip:** Create a desktop shortcut with that target line so you don't have to do it every time.
+- Close the official MK1300v2 software before connecting
 
 ---
 
 ## Usage
 
-1. Open the tool in the flagged browser
-2. Click **[ CONNECT ]** → select *Gaming Keyboard* from the popup
-3. Click any pattern — it applies instantly to your keyboard
-4. Drag the sidebar edge to resize the preview
+1. Click **[ CONNECT ]** → select *Gaming Keyboard* from the popup
+2. Click any pattern — it applies instantly to your keyboard
+3. Drag the sidebar edge to resize the preview
 
 ---
 
