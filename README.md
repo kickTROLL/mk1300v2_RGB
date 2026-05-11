@@ -4,6 +4,9 @@ A browser-based per-key RGB tool for the **MK1300 V2 60% keyboard** — 90 stati
 
 > **Live:** [kickTROLL.github.io/mk1300v2_RGB](https://kickTROLL.github.io/mk1300v2_RGB) *(update link)*
 
+<img width="1905" height="935" alt="image" src="https://github.com/user-attachments/assets/7031b6cd-ab07-41bb-b837-daf0ee23b2ca" />
+
+
 ---
 
 ## ⚠️ Requirements
