@@ -1,24 +1,31 @@
 import { HIDDriver } from './hid-driver.js';
 import { KEYBOARD_LAYOUT, KEY_COUNT, KB_WIDTH, KB_HEIGHT } from './keyboard-layout.js';
 import { PATTERNS } from './effects.js';
+import { EXTRA_PATTERNS } from './extra-effects.js';
+
+const ALL_PATTERNS = [...PATTERNS, ...EXTRA_PATTERNS];
+
 
 const driver = new HIDDriver();
-let currentPattern = PATTERNS[0];
+let currentPattern = ALL_PATTERNS[0];
 let currentColors  = [];
 let activeCat      = 'all';
 let sendPending    = false;
 
+
 // ── Categories ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
-  { id: 'all',      label: 'ALL',       icon: '◈' },
-  { id: 'gradient', label: 'GRADIENT',  icon: '🌈' },
-  { id: 'neon',     label: 'NEON/CYBER',icon: '⚡' },
-  { id: 'heat',     label: 'FIRE/HEAT', icon: '🔥' },
-  { id: 'ice',      label: 'ICE/CRYO',  icon: '❄️' },
-  { id: 'dark',     label: 'DARK',      icon: '🌑' },
-  { id: 'pastel',   label: 'PASTEL',    icon: '🌸' },
-  { id: 'metallic', label: 'METALLIC',  icon: '🏆' },
+  { id: 'all',       label: 'ALL',        icon: '◈' },
+  { id: 'contrasty', label: 'CONTRASTY',  icon: '⚡' },
+  { id: 'gradient',  label: 'GRADIENT',   icon: '🌈' },
+  { id: 'neon',      label: 'NEON/CYBER', icon: '💜' },
+  { id: 'heat',      label: 'FIRE/HEAT',  icon: '🔥' },
+  { id: 'ice',       label: 'ICE/CRYO',   icon: '❄️' },
+  { id: 'dark',      label: 'DARK',       icon: '🌑' },
+  { id: 'pastel',    label: 'PASTEL',     icon: '🌸' },
+  { id: 'metallic',  label: 'METALLIC',   icon: '🏆' },
 ];
+
 
 // Map each pattern id → category id
 const PATTERN_CAT = {
@@ -52,6 +59,24 @@ const PATTERN_CAT = {
 
   rosegold:'metallic', amethyst:'metallic', moltengold:'metallic', copper:'metallic',
   bronzeage:'metallic', coppergold:'metallic',
+  // Extra contrasty patterns
+  checkerboard:'contrasty', cyberstripes:'contrasty', yinyang:'contrasty',
+  typeglow:'contrasty',     rowneon:'contrasty',      bullseye:'contrasty',
+  policelight:'contrasty',  phantom:'dark',           binary:'contrasty',
+  rave:'contrasty',         disco:'contrasty',        vampire:'heat',
+  stainedglass:'contrasty', lasergrid:'neon',         diagstripes:'contrasty',
+  flamerow:'heat',          voidportal:'dark',        sunrisefire:'heat',
+  neobluprint:'neon',       cherrybomb:'heat',        toxicrain:'neon',
+  pinstripe:'contrasty',    glitch:'dark',            heatzone:'heat',
+  icespike:'ice',           acidwash:'neon',          neontetris:'contrasty',
+  camo:'dark',              deepmagma:'heat',         frozentundra:'ice',
+  rowcheck:'contrasty',     neoncross:'neon',         horror:'dark',
+  neonstrip2:'contrasty',   goldrush:'metallic',      rainbowdiag:'contrasty',
+  acidcheck:'contrasty',    spotlightesc:'dark',      neonrowalt:'contrasty',
+  emberwaves:'heat',        neonblocks:'contrasty',   uwistripe:'contrasty',
+  midnightfire:'heat',      lavacheck:'heat',         frostbite:'ice',
+  hotspots:'heat',          pixelflag:'contrasty',    spectrumcross:'contrasty',
+  deepcherry:'pastel',      elecfence:'contrasty',
 };
 
 function catOf(id) { return PATTERN_CAT[id] || 'gradient'; }
@@ -173,8 +198,8 @@ function buildCatTabs() {
 // ── Patterns grid ─────────────────────────────────────────────────────────────
 function buildGrid() {
   const filtered = activeCat === 'all'
-    ? PATTERNS
-    : PATTERNS.filter(p => catOf(p.id) === activeCat);
+    ? ALL_PATTERNS
+    : ALL_PATTERNS.filter(p => catOf(p.id) === activeCat);
 
   patternCount.textContent = `${filtered.length} PATTERNS`;
   patternsGrid.innerHTML = '';
@@ -186,6 +211,7 @@ function buildGrid() {
     card.addEventListener('click', () => applyPattern(p, true));
     patternsGrid.appendChild(card);
   });
+
 }
 
 // ── Connect ───────────────────────────────────────────────────────────────────
@@ -252,5 +278,6 @@ document.addEventListener('mouseup', () => {
 buildKeyboard();
 buildCatTabs();
 buildGrid();
-applyPattern(PATTERNS[0], false);
+applyPattern(ALL_PATTERNS[0], false);
 log('READY. SELECT PATTERN & CONNECT.');
+

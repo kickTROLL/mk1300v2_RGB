@@ -1,20 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MK1300V2 — Custom RGB</title>
+  <title>MK1300 V2 — Custom RGB</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div class="scanlines"></div>
   <div class="layout">
 
     <!-- ── SIDEBAR ── -->
     <div class="sidebar">
-      <div class="pixel-title">MK<span>1300 V2</span><br>RGB<span class="blink">_</span></div>
+      <div class="pixel-title">MK<span>1300v2</span><br>RGB<span class="blink">_</span></div>
 
       <div class="s-section">
         <button id="connect-btn" class="pixel-btn">[ CONNECT ]</button>
@@ -46,8 +48,8 @@
 
       <div class="pixel-warn">
         !! ONLY RGB CMDS SENT<br>
-        FW RESET = BLOCKED<br>
-        USE --disable-hid-blocklist
+        <br>
+
       </div>
       <div class="resize-handle" id="resize-handle"></div>
     </div>
@@ -64,4 +66,5 @@
   </div>
   <script type="module" src="app.js"></script>
 </body>
+
 </html>
