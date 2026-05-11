@@ -64,6 +64,37 @@
     </div>
 
   </div>
+
+  <!-- ── MODE REMINDER MODAL ── -->
+  <div id="mode-modal" class="modal-overlay" style="display:none">
+    <div class="modal-box">
+      <div class="modal-title">!! ACTION REQUIRED !!</div>
+      <div class="modal-body">
+        <div class="modal-step">
+          <span class="modal-num">[01]</span>
+          Press <strong class="accent-cyan">FN + Backspace</strong> on your keyboard
+        </div>
+        <div class="modal-step">
+          <span class="modal-num">[02]</span>
+          This cycles through lighting modes — keep pressing until the LEDs show a <strong>static solid colour</strong>
+        </div>
+        <div class="modal-step">
+          <span class="modal-num">[03]</span>
+          That means you're in <strong class="accent-cyan">Custom Static RGB</strong> mode ✓
+        </div>
+        <div class="modal-step">
+          <span class="modal-num">[04]</span>
+          Now click any pattern below to apply it instantly
+        </div>
+      </div>
+      <div class="modal-check">
+        <input type="checkbox" id="modal-skip" style="cursor:pointer">
+        <label for="modal-skip" style="cursor:pointer">DON'T SHOW AGAIN</label>
+      </div>
+      <button id="modal-ok" class="pixel-btn modal-ok-btn">[ GOT IT — LET'S GO ]</button>
+    </div>
+  </div>
+
   <script type="module" src="app.js"></script>
 </body>
 

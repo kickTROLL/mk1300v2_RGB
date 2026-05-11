@@ -214,6 +214,27 @@ function buildGrid() {
 
 }
 
+// ── Modal ────────────────────────────────────────────────────────────────────
+const modalOverlay = document.getElementById('mode-modal');
+const modalOk      = document.getElementById('modal-ok');
+const modalSkip    = document.getElementById('modal-skip');
+
+function showModal() {
+  if (localStorage.getItem('mk1300_skip_modal') === '1') return;
+  modalOverlay.style.display = 'flex';
+}
+modalOk.addEventListener('click', () => {
+  if (modalSkip.checked) localStorage.setItem('mk1300_skip_modal', '1');
+  modalOverlay.style.display = 'none';
+});
+// Also dismiss by clicking outside the box
+modalOverlay.addEventListener('click', e => {
+  if (e.target === modalOverlay) {
+    if (modalSkip.checked) localStorage.setItem('mk1300_skip_modal', '1');
+    modalOverlay.style.display = 'none';
+  }
+});
+
 // ── Connect ───────────────────────────────────────────────────────────────────
 async function connectDevice() {
   connectBtn.disabled = true;
@@ -229,6 +250,7 @@ async function connectDevice() {
       log('OK: custom RGB mode active');
     } catch(e) { log('WARN: ' + e.message); }
     await applyPattern(currentPattern, true);
+    showModal();
   } catch(e) {
     statusDot.className = 'dot dot-off';
     statusText.textContent = 'OFFLINE';
