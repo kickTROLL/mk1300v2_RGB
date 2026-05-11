@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MK1300 V2 — Custom RGB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="scanlines"></div>
+  <div class="layout">
+
+    <!-- ── SIDEBAR ── -->
+    <div class="sidebar">
+      <div class="pixel-title">MK<span>1300</span><br>RGB<span class="blink">_</span></div>
+
+      <div class="s-section">
+        <button id="connect-btn" class="pixel-btn">[ CONNECT ]</button>
+        <div class="status-row">
+          <span id="status-dot" class="dot dot-off"></span>
+          <span id="status-text" class="vt">OFFLINE</span>
+        </div>
+        <div id="device-info" class="vt dim" style="font-size:13px;margin-top:4px"></div>
+      </div>
+
+      <div class="s-section">
+        <div class="pixel-label">// PREVIEW</div>
+        <div class="pixel-label accent" id="pattern-name" style="margin-bottom:6px;font-size:7px">SUNSET DUSK</div>
+        <div class="crt-frame">
+          <div id="keyboard" class="keyboard"></div>
+          <div class="crt-overlay"></div>
+        </div>
+      </div>
+
+      <div class="s-section">
+        <div class="pixel-label">// BRIGHTNESS &gt; <span id="brightness-val" class="accent">100</span>%</div>
+        <input type="range" id="brightness-slider" class="pixel-slider" min="10" max="100" value="100">
+      </div>
+
+      <div class="s-section" style="flex:1">
+        <div class="pixel-label">// LOG</div>
+        <div id="log-panel" class="log-panel"></div>
+      </div>
+
+      <div class="pixel-warn">
+        !! ONLY RGB CMDS SENT<br>
+        FW RESET = BLOCKED<br>
+        USE --disable-hid-blocklist
+      </div>
+      <div class="resize-handle" id="resize-handle"></div>
+    </div>
+
+    <!-- ── MAIN ── -->
+    <div class="main">
+      <div class="cat-strip" id="cat-strip">
+        <!-- built by JS -->
+      </div>
+      <div class="pattern-count vt" id="pattern-count"></div>
+      <div id="patterns-grid" class="effects-grid"></div>
+    </div>
+
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
