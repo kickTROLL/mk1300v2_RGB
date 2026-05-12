@@ -2,7 +2,7 @@
 
 A browser-based per-key RGB tool for the **MK1300 V2 60% keyboard** — 140 static patterns, no bloated software required.
 
-> **Live:** [kickTROLL.github.io/mk1300v2_RGB](https://kickTROLL.github.io/mk1300v2_RGB) *(update link)*
+> **Live:** [kickTROLL.github.io/mk1300v2_RGB](https://kickTROLL.github.io/mk1300v2_RGB)
 
 <img width="1549" height="732" alt="image" src="https://github.com/user-attachments/assets/2b7df3ad-5c9f-4317-a123-bc6b798946ce" />
 
