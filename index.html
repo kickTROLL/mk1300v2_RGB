@@ -56,44 +56,147 @@
 
     <!-- ── MAIN ── -->
     <div class="main">
-      <div class="cat-strip" id="cat-strip">
-        <!-- built by JS -->
+      <div class="pixel-tabs">
+        <button id="tab-software" class="pixel-tab active">[ SOFTWARE SYNC ]</button>
+        <button id="tab-hardware" class="pixel-tab">[ HARDWARE FX ]</button>
+        <button id="tab-custom" class="pixel-tab">[ CUSTOM PRESET ]</button>
       </div>
-      <div class="pattern-count vt" id="pattern-count"></div>
-      <div id="patterns-grid" class="effects-grid"></div>
+
+      <div id="software-panel" class="panel active">
+        <div class="cat-strip" id="cat-strip">
+          <!-- built by JS -->
+        </div>
+        <div class="pattern-count vt" id="pattern-count"></div>
+        <button id="audio-viz-btn" class="pixel-btn disabled-btn" disabled>
+          [ MIC/AUDIO VISUALIZER: OFF ] [BROKEN]
+        </button>
+        <div id="patterns-grid" class="effects-grid"></div>
+      </div>
+
+      <div id="hardware-panel" class="panel" style="display:none">
+        <div class="hw-controls">
+          <div class="hw-group">
+            <div class="pixel-label">// EFFECT MODE</div>
+            <select id="hw-mode" class="pixel-select">
+              <option value="0">0: Light Off</option>
+              <option value="1">1: Static</option>
+              <option value="2">2: Breath</option>
+              <option value="3">3: Swing</option>
+              <option value="4">4: Spin</option>
+              <option value="5">5: Stream</option>
+              <option value="6">6: Bloom</option>
+              <option value="7">7: UDWawe</option>
+              <option value="8">8: Cross</option>
+              <option value="9">9: Rain</option>
+              <option value="10">10: Meteor</option>
+              <option value="11">11: TrigSpread</option>
+              <option value="12">12: TrigSpreadReverse</option>
+              <option value="13">13: TrigSingle</option>
+              <option value="14">14: Soduko</option>
+              <option value="15">15: Tide</option>
+              <option value="16">16: UserLight</option>
+
+            </select>
+          </div>
+
+          <div class="hw-group">
+            <div class="pixel-label">// SPEED [SOME EFFECTS MIGHT BREAK AT SPEED=4] &gt; <span id="hw-speed-val"
+                class="accent">2</span></div>
+            <input type="range" id="hw-speed" class="pixel-slider" min="0" max="4" value="2">
+          </div>
+
+          <div class="hw-group">
+            <div class="pixel-label">// BRIGHTNESS &gt; <span id="hw-bright-val" class="accent">4</span></div>
+            <input type="range" id="hw-bright" class="pixel-slider" min="0" max="4" value="4">
+          </div>
+
+          <div class="hw-group">
+            <div class="pixel-label" style="margin-bottom:8px">// HW COLOR</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <input type="color" id="hw-color-picker" class="custom-color-input" value="#ff2d78">
+              <div class="custom-swatches" id="hw-swatches">
+                <button class="swatch" data-color="multi"
+                  style="background:linear-gradient(135deg, #f00, #ff0, #0f0, #0ff, #00f, #f0f);"
+                  title="Multi/Rainbow"></button>
+                <button class="swatch" data-color="#ff0000" style="background:#ff0000" title="Red"></button>
+                <button class="swatch" data-color="#00ff00" style="background:#00ff00" title="Green"></button>
+                <button class="swatch" data-color="#0000ff" style="background:#0000ff" title="Blue"></button>
+                <button class="swatch" data-color="#00ffff" style="background:#00ffff" title="Cyan"></button>
+                <button class="swatch" data-color="#ff00ff" style="background:#ff00ff" title="Magenta"></button>
+                <button class="swatch" data-color="#ffff00" style="background:#ffff00" title="Yellow"></button>
+                <button class="swatch" data-color="#ffffff" style="background:#ffffff" title="White"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CUSTOM PRESET PANEL ── -->
+      <div id="custom-panel" class="panel" style="display:none">
+        <div class="custom-toolbar">
+          <div class="custom-toolbar-left">
+            <div class="custom-color-group">
+              <div class="pixel-label" style="margin-bottom:4px">// PAINT COLOR</div>
+              <input type="color" id="custom-color-picker" class="custom-color-input" value="#ff2d78">
+              <div class="custom-swatches" id="custom-swatches">
+                <button class="swatch" data-color="#ff0000" style="background:#ff0000" title="Red"></button>
+                <button class="swatch" data-color="#00ff00" style="background:#00ff00" title="Green"></button>
+                <button class="swatch" data-color="#0000ff" style="background:#0000ff" title="Blue"></button>
+                <button class="swatch" data-color="#00ffff" style="background:#00ffff" title="Cyan"></button>
+                <button class="swatch" data-color="#ff00ff" style="background:#ff00ff" title="Magenta"></button>
+                <button class="swatch" data-color="#ffff00" style="background:#ffff00" title="Yellow"></button>
+                <button class="swatch" data-color="#ffffff" style="background:#ffffff" title="White"></button>
+                <button class="swatch" data-color="#ff8800" style="background:#ff8800" title="Orange"></button>
+                <button class="swatch" data-color="#8800ff" style="background:#8800ff" title="Purple"></button>
+                <button class="swatch" data-color="#ff69b4" style="background:#ff69b4" title="Pink"></button>
+                <button class="swatch" data-color="#000000" style="background:#000000;border-color:#555"
+                  title="Off"></button>
+              </div>
+            </div>
+          </div>
+          <div class="custom-toolbar-right">
+            <div class="custom-actions">
+              <button id="custom-fill" class="pixel-btn custom-action-btn" title="Fill all keys">[ FILL ALL ]</button>
+              <button id="custom-clear" class="pixel-btn custom-action-btn" title="Clear all keys">[ CLEAR ]</button>
+              <button id="custom-undo" class="pixel-btn custom-action-btn" title="Undo last change">[ UNDO ]</button>
+            </div>
+            <div class="custom-push-row">
+              <button id="custom-push" class="pixel-btn custom-push-btn">[ PUSH TO KEYBOARD ]</button>
+              <label class="custom-toggle-label">
+                <input type="checkbox" id="custom-autopush" checked>
+                <span class="vt">AUTO-PUSH</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="custom-keyboard-wrap">
+          <div class="pixel-label" style="padding:0 20px;margin-bottom:4px">// CLICK OR DRAG TO PAINT KEYS <span
+              class="accent" id="custom-select-count"></span></div>
+          <div id="custom-keyboard" class="custom-keyboard"></div>
+        </div>
+
+        <!-- ── Profiles ── -->
+        <div class="custom-profiles">
+          <div class="pixel-label" style="margin-bottom:8px">// PROFILES</div>
+          <div class="profile-actions">
+            <input type="text" id="profile-name" class="profile-input" placeholder="Profile name...">
+            <button id="profile-save" class="pixel-btn profile-btn">[ SAVE ]</button>
+            <button id="profile-export" class="pixel-btn profile-btn">[ EXPORT ]</button>
+            <label class="pixel-btn profile-btn profile-import-label">
+              [ IMPORT ]
+              <input type="file" id="profile-import" accept=".json" style="display:none">
+            </label>
+          </div>
+          <div id="profile-list" class="profile-list"></div>
+        </div>
+      </div>
+
     </div>
 
   </div>
 
-  <!-- ── MODE REMINDER MODAL ── -->
-  <div id="mode-modal" class="modal-overlay" style="display:none">
-    <div class="modal-box">
-      <div class="modal-title">!! ACTION REQUIRED !!</div>
-      <div class="modal-body">
-        <div class="modal-step">
-          <span class="modal-num">[01]</span>
-          Press <strong class="accent-cyan">FN + Backspace</strong> on your keyboard
-        </div>
-        <div class="modal-step">
-          <span class="modal-num">[02]</span>
-          This cycles through lighting modes — keep pressing until the LEDs show a <strong>static solid colour</strong>
-        </div>
-        <div class="modal-step">
-          <span class="modal-num">[03]</span>
-          That means you're in <strong class="accent-cyan">Custom Static RGB</strong> mode ✓
-        </div>
-        <div class="modal-step">
-          <span class="modal-num">[04]</span>
-          Now click any pattern below to apply it instantly
-        </div>
-      </div>
-      <div class="modal-check">
-        <input type="checkbox" id="modal-skip" style="cursor:pointer">
-        <label for="modal-skip" style="cursor:pointer">DON'T SHOW AGAIN</label>
-      </div>
-      <button id="modal-ok" class="pixel-btn modal-ok-btn">[ GOT IT — LET'S GO ]</button>
-    </div>
-  </div>
+
 
   <script type="module" src="app.js"></script>
 </body>

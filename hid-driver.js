@@ -183,28 +183,66 @@ class HIDDriver {
     return config;
   }
 
-  async setLightMode(mode, brightness = 255) {
-    this.log(`Setting light mode to ${mode} (custom), brightness ${brightness}...`);
+  async setHardwareAnimation(mode, brightness = 4, speed = 2, colorMode = 0, direction = 0, hsv = null) {
+    this.log(`Setting hardware animation: mode=${mode}, brightness=${brightness}, speed=${speed}, colorMode=${colorMode}`);
 
-    // Step 1: Query what config looks like for this mode
-    const resp = await this.sendDeviceData([22, 0, 0, 0, 1, 0, mode]);
-    this.log(`Mode query response: [${resp.slice(0, 20).join(',')}]`);
+    // Build the 11-byte config payload
+    // Brightness slider (0-4) maps to HSV V value for actual LED intensity
+    const brightnessToV = [30, 80, 140, 200, 236];
+    const vValue = brightnessToV[brightness] || 236;
 
-    if (!resp || resp.length < 16) {
-      // Fallback: send a hardcoded custom mode config
-      this.log('Using fallback config for custom mode');
-      const fallback = [11, 11, 0, 0, 1, 0, mode, brightness, 128, 0, 1, 0, 0, 0, 0];
-      await this.sendDeviceData(fallback);
-    } else {
-      const config = resp.slice(4, 16);
+    function applyColor(config) {
       config[2] = mode;
       config[3] = brightness;
-      this.log(`Applying config: [${config.join(',')}]`);
+      config[4] = speed;
+
+      if (colorMode === 1 && hsv) {
+        // Custom single-color mode: flags [5]=1 [6]=1, then [7]=0, [8..10]=HSV
+        config[5] = 1;
+        config[6] = 1;
+        config[7] = 0;
+        config[8] = hsv.h;
+        config[9] = hsv.s;
+        config[10] = vValue;
+      } else {
+        // Multi/Rainbow mode: flags [5]=direction [6]=0, then [7]=8, [8..10]=defaults
+        config[5] = direction;
+        config[6] = 0;
+        config[7] = 8;
+        config[8] = 255;
+        config[9] = 255;
+        config[10] = vValue;
+      }
+    }
+
+    // Step 1: Query and update the GLOBAL config (Type 0)
+    const globalResp = await this.sendDeviceData([10]);
+    this.log(`Global query response: [${globalResp.slice(0, 20).join(',')}]`);
+
+    if (globalResp && globalResp.length >= 16) {
+      const config = globalResp.slice(5, 16);
+      config[0] = 0; // Type 0 = Global / Active
+      config[1] = config[1]; // keep sub-type
+      applyColor(config);
+
+      this.log(`Applying Global Config: [${config.join(',')}]`);
       await this.sendDeviceData([11, config.length, 0, 0, ...config]);
     }
 
-    await sleep(50); // Give keyboard time to switch mode
-    this.log('Light mode set!');
+    // Step 2: Query and update the Mode Template (Type 1)
+    const tplResp = await this.sendDeviceData([22, 0, 0, 0, 1, 0, mode]);
+    if (tplResp && tplResp.length >= 16) {
+      const tplConfig = tplResp.slice(5, 16);
+      tplConfig[0] = 1; // Type 1 = Mode Template
+      tplConfig[1] = tplConfig[1]; // keep sub-type
+      applyColor(tplConfig);
+
+      this.log(`Applying Template Config: [${tplConfig.join(',')}]`);
+      await this.sendDeviceData([11, tplConfig.length, 0, 0, ...tplConfig]);
+    }
+
+    await sleep(50);
+    this.log('Hardware animation set!');
   }
 
   async setKeyColor(keyIndex, r, g, b) {
