@@ -1,10 +1,11 @@
 # MK1300 V2 Custom RGB
 
-A browser-based per-key RGB tool for the **MK1300 V2 60% keyboard** — 90 static patterns, no bloated software required.
+A browser-based per-key RGB tool for the **MK1300 V2 60% keyboard** — 140 static patterns, no bloated software required.
 
 > **Live:** [kickTROLL.github.io/mk1300v2_RGB](https://kickTROLL.github.io/mk1300v2_RGB) *(update link)*
 
-<img width="1905" height="935" alt="image" src="https://github.com/user-attachments/assets/7031b6cd-ab07-41bb-b837-daf0ee23b2ca" />
+<img width="1549" height="732" alt="image" src="https://github.com/user-attachments/assets/2b7df3ad-5c9f-4317-a123-bc6b798946ce" />
+
 
 
 ---
@@ -15,7 +16,10 @@ A browser-based per-key RGB tool for the **MK1300 V2 60% keyboard** — 90 stati
 - Close the official MK1300v2 software before connecting
 
 ---
-
+## What's New?
+- [NEW] On-board HW Animated Effects added
+- [NEW] Easy to use Custom per-key RGB layout maker added
+---
 ## Usage
 
 1. Click **[ CONNECT ]** → select *Gaming Keyboard* from the popup
