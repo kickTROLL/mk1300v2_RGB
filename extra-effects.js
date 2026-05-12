@@ -34,7 +34,7 @@ function ny(k){return(k.y+k.h/2)/KB_HEIGHT;}
 function col(k){return Math.floor(k.x+k.w/2);}
 function zone(k){
   const n=k.name;
-  if(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','↑','←','Enter','Space'].includes(n))return'mod';
+  if(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','←','Enter','Space'].includes(n))return'mod';
   if(['1','2','3','4','5','6','7','8','9','0','-','='].includes(n))return'num';
   return'alpha';
 }

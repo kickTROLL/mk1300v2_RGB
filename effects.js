@@ -39,7 +39,7 @@ function row(k){ return Math.round(k.y); }
 // Classify key zone
 function zone(k){
   const n = k.name;
-  if(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','↑','←','Enter','Space'].includes(n)) return 'mod';
+  if(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','←','Enter','Space'].includes(n)) return 'mod';
   if(['1','2','3','4','5','6','7','8','9','0','-','='].includes(n)) return 'num';
   return 'alpha';
 }

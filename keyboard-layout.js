@@ -72,8 +72,7 @@ export const KEYBOARD_LAYOUT = [
   { index:93, x:9.25, y:3, w:1,    h:1, name:"<"   },
   { index:94, x:10.25,y:3, w:1,    h:1, name:">"   },
   { index:95, x:11.25,y:3, w:1,    h:1, name:"?"   },
-  { index:99, x:12.25,y:3, w:1,    h:1, name:"↑"   },
-  { index:97, x:13.25,y:3, w:1.75, h:1, name:"Shift"},
+  { index:97, x:12.25,y:3, w:2.75, h:1, name:"Shift"},
 
   // Row 4 — Bottom row (y=4)
   { index:105,x:0,    y:4, w:1.25, h:1, name:"Ctrl" },

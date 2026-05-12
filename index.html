@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MK1300 V2 — Custom RGB</title>
+  <link rel="icon" type="image/icon" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -41,13 +42,35 @@
         <input type="range" id="brightness-slider" class="pixel-slider" min="10" max="100" value="100">
       </div>
 
-      <div class="s-section" style="flex:1">
+      <div class="s-section">
         <div class="pixel-label">// LOG</div>
         <div id="log-panel" class="log-panel"></div>
       </div>
 
+      <div class="s-section">
+        <div class="pixel-label">// UI THEME</div>
+        <div class="theme-grid">
+          <div class="theme-swatch active" data-theme="default" style="--c1:#ff2d78;--c2:#00f5ff"
+            title="Cyberpunk (Default)"></div>
+          <div class="theme-swatch" data-theme="matrix" style="--c1:#00ff41;--c2:#008f11" title="Matrix"></div>
+          <div class="theme-swatch" data-theme="synthwave" style="--c1:#f0f;--c2:#0ff" title="Synthwave"></div>
+          <div class="theme-swatch" data-theme="blood" style="--c1:#f00;--c2:#500" title="Blood"></div>
+          <div class="theme-swatch" data-theme="gold" style="--c1:#ffdf00;--c2:#8a6d3b" title="Golden Retro"></div>
+          <div class="theme-swatch" data-theme="abyssal" style="--c1:#00f5ff;--c2:#001d3d" title="Abyssal"></div>
+          <div class="theme-swatch" data-theme="toxic" style="--c1:#adff2f;--c2:#1a3300" title="Toxic"></div>
+          <div class="theme-swatch" data-theme="frozen" style="--c1:#64ffda;--c2:#112240" title="Frozen"></div>
+          <div class="theme-swatch" data-theme="forest" style="--c1:#90be6d;--c2:#2d3b2d" title="Forest"></div>
+          <div class="theme-swatch" data-theme="carbon" style="--c1:#e53935;--c2:#1e1e1e" title="Carbon Stealth"></div>
+          <div class="theme-swatch" data-theme="midnight" style="--c1:#4b0082;--c2:#050510" title="Midnight"></div>
+          <div class="theme-swatch" data-theme="noir" style="--c1:#333;--c2:#000" title="Noir"></div>
+          <div class="theme-swatch" data-theme="solar" style="--c1:#ff6f00;--c2:#fffcf0" title="Solar"></div>
+          <div class="theme-swatch" data-theme="paper" style="--c1:#007bff;--c2:#f8f9fa" title="Paper"></div>
+        </div>
+      </div>
+
       <div class="pixel-warn">
-        !! ONLY RGB CMDS SENT<br>
+        !! Only RGB-related commands are sent through this tool.<br>
+        It cannot brick your keyboard.<br>
         <br>
 
       </div>
@@ -193,10 +216,31 @@
       </div>
 
     </div>
-
   </div>
 
+  <div class="footer-signature vt">
+    MADE WITH <span style="color:var(--pink)">&lt;3</span> BY <span class="accent">YASH</span> [AKA KICKTROLL]
+  </div>
 
+  <!-- Browser Support Modal -->
+  <div class="modal-overlay" id="browser-modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">!! COMPATIBILITY ALERT !!</div>
+      <div class="modal-body">
+        ONLY <span>CHROMIUM</span> BASED BROWSERS LIKE <span>CHROME</span>, <span>EDGE</span> AND <span>OPERA</span> ARE
+        SUPPORTED.<br><br>
+        BROWSERS LIKE <span>FIREFOX</span> AND <span>SAFARI</span> ARE NOT SUPPORTED AS THEY DON'T HAVE
+        <span>WEBHID</span>.
+      </div>
+      <div class="modal-footer">
+        <label class="modal-checkbox-label">
+          <input type="checkbox" id="modal-dont-show">
+          <span class="vt">DON'T SHOW THIS AGAIN</span>
+        </label>
+        <button class="modal-close-btn" id="modal-close-btn">[ UNDERSTOOD ]</button>
+      </div>
+    </div>
+  </div>
 
   <script type="module" src="app.js"></script>
 </body>

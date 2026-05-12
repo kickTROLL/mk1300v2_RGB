@@ -871,3 +871,42 @@ highlightActiveSwatch();
 highlightHwSwatch();
 log('READY. SELECT PATTERN & CONNECT.');
 
+// ── Browser Support Check ─────────────────────────────────────────────────────
+const modalOverlay = document.getElementById('browser-modal-overlay');
+const modalClose   = document.getElementById('modal-close-btn');
+const modalDontShow = document.getElementById('modal-dont-show');
+const MODAL_PREF_KEY = 'mk1300_hide_browser_modal';
+
+function checkBrowserSupport() {
+  if (localStorage.getItem(MODAL_PREF_KEY) === 'true') return;
+  modalOverlay.classList.add('active');
+}
+
+modalClose.addEventListener('click', () => {
+  if (modalDontShow.checked) {
+    localStorage.setItem(MODAL_PREF_KEY, 'true');
+  }
+  modalOverlay.classList.remove('active');
+});
+
+// ── UI Theme ──────────────────────────────────────────────────────────────────
+const THEME_KEY = 'mk1300_ui_theme';
+const themeSwatches = document.querySelectorAll('.theme-swatch');
+
+function applyUITheme(themeId) {
+  document.documentElement.setAttribute('data-ui-theme', themeId);
+  themeSwatches.forEach(s => s.classList.toggle('active', s.dataset.theme === themeId));
+  localStorage.setItem(THEME_KEY, themeId);
+}
+
+themeSwatches.forEach(swatch => {
+  swatch.addEventListener('click', () => applyUITheme(swatch.dataset.theme));
+});
+
+// Init theme
+const savedTheme = localStorage.getItem(THEME_KEY) || 'default';
+applyUITheme(savedTheme);
+
+// Run check on load
+checkBrowserSupport();
+
