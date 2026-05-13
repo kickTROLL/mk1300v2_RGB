@@ -205,6 +205,7 @@ function buildCatTabs() {
       activeCat = cat.id;
       buildCatTabs();
       buildGrid();
+      saveSettings();
     });
     catStrip.appendChild(btn);
   });
@@ -223,7 +224,10 @@ function buildGrid() {
     card.className = `effect-card${p.id === currentPattern.id ? ' active' : ''}`;
     card.dataset.id = p.id;
     card.innerHTML = `<span class="effect-icon">${p.icon}</span><span class="effect-name">${p.name}</span>`;
-    card.addEventListener('click', () => applyPattern(p, true));
+    card.addEventListener('click', () => {
+      applyPattern(p, true);
+      saveSettings();
+    });
     patternsGrid.appendChild(card);
   });
 
@@ -384,6 +388,7 @@ audioVizBtn.addEventListener('click', toggleAudioViz);
 bSlider.addEventListener('input', () => {
   bVal.textContent = bSlider.value;
   applyPattern(currentPattern, driver.connected);
+  saveSettings();
 });
 
 function hexToHsv(hex) {
@@ -421,6 +426,7 @@ hwColorPicker.addEventListener('input', () => {
   hwCurrentColorHex = hwColorPicker.value;
   highlightHwSwatch();
   updateHardwareLight();
+  saveSettings();
 });
 
 hwSwatches.addEventListener('click', (e) => {
@@ -432,6 +438,7 @@ hwSwatches.addEventListener('click', (e) => {
   }
   highlightHwSwatch();
   updateHardwareLight();
+  saveSettings();
 });
 
 async function updateHardwareLight() {
@@ -465,6 +472,8 @@ function switchTab(tab) {
   panelHardware.style.display = tab === 'hardware' ? 'block' : 'none';
   panelCustom.style.display   = tab === 'custom'   ? 'block' : 'none';
   
+  saveSettings();
+
   if (driver.connected) {
     if (tab === 'software') {
       driver.setHardwareAnimation(16, 4).then(() => applyPattern(currentPattern, true));
@@ -485,14 +494,19 @@ tabSoftware.addEventListener('click', () => switchTab('software'));
 tabHardware.addEventListener('click', () => switchTab('hardware'));
 tabCustom.addEventListener('click', () => switchTab('custom'));
 
-hwMode.addEventListener('change', updateHardwareLight);
+hwMode.addEventListener('change', () => {
+  updateHardwareLight();
+  saveSettings();
+});
 hwSpeed.addEventListener('input', () => {
   hwSpeedVal.textContent = hwSpeed.value;
   updateHardwareLight();
+  saveSettings();
 });
 hwBright.addEventListener('input', () => {
   hwBrightVal.textContent = hwBright.value;
   updateHardwareLight();
+  saveSettings();
 });
 
 // ══════════════════════════════════════════════════════════════════════════════
@@ -556,7 +570,7 @@ function buildCustomKeyboard() {
     el.style.fontSize = `${Math.max(9, scale * 0.55)}px`;
     el.textContent  = key.name;
     
-    const c = customColors[i];
+    const c = customColors[i] || { r: 0, g: 0, b: 0 };
     el.style.backgroundColor = `rgb(${c.r},${c.g},${c.b})`;
     if (Math.max(c.r, c.g, c.b) > 20) {
       el.style.boxShadow = `0 0 ${Math.round(Math.max(c.r,c.g,c.b)/14)}px rgba(${c.r},${c.g},${c.b},0.5)`;
@@ -574,7 +588,7 @@ function buildCustomKeyboard() {
 
     el.addEventListener('contextmenu', (e) => {
       e.preventDefault();
-      const c = customColors[i];
+      const c = customColors[i] || { r: 0, g: 0, b: 0 };
       paintColor = { r: c.r, g: c.g, b: c.b };
       customColorPicker.value = rgbToHex(c.r, c.g, c.b);
       highlightActiveSwatch();
@@ -618,12 +632,13 @@ function applyPaintToSelected() {
   selectedKeys.clear();
   updateCustomKeySelection();
   if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
 }
 
 function refreshCustomKeyboard() {
   customKb.querySelectorAll('.custom-key').forEach(el => {
     const i = parseInt(el.dataset.idx);
-    const c = customColors[i];
+    const c = customColors[i] || { r: 0, g: 0, b: 0 };
     el.style.backgroundColor = `rgb(${c.r},${c.g},${c.b})`;
     const bright = Math.max(c.r, c.g, c.b);
     el.style.boxShadow = bright > 20
@@ -659,6 +674,7 @@ async function pushCustomToHW() {
 customColorPicker.addEventListener('input', () => {
   paintColor = hexToRgb(customColorPicker.value);
   highlightActiveSwatch();
+  saveSettings();
 });
 
 customSwatches.addEventListener('click', (e) => {
@@ -668,6 +684,7 @@ customSwatches.addEventListener('click', (e) => {
   paintColor = hexToRgb(hex);
   customColorPicker.value = hex;
   highlightActiveSwatch();
+  saveSettings();
 });
 
 function highlightActiveSwatch() {
@@ -677,12 +694,15 @@ function highlightActiveSwatch() {
   });
 }
 
+customAutoPush.addEventListener('change', saveSettings);
+
 // ── Action buttons ──────────────────────────────────────────────────────────
 customFill.addEventListener('click', () => {
   saveUndoState();
   customColors = KEYBOARD_LAYOUT.map(() => ({ ...paintColor }));
   refreshCustomKeyboard();
   if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
   log('Filled all keys');
 });
 
@@ -691,6 +711,7 @@ customClear.addEventListener('click', () => {
   customColors = KEYBOARD_LAYOUT.map(() => ({ r: 0, g: 0, b: 0 }));
   refreshCustomKeyboard();
   if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
   log('Cleared all keys');
 });
 
@@ -699,6 +720,7 @@ customUndo.addEventListener('click', () => {
   customColors = undoStack.pop();
   refreshCustomKeyboard();
   if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
   log('Undo applied');
 });
 
@@ -861,15 +883,75 @@ document.addEventListener('mouseup', () => {
   document.body.style.userSelect = '';
 });
 
-// ── Init ──────────────────────────────────────────────────────────────────────
-buildKeyboard();
-buildCatTabs();
-buildGrid();
-applyPattern(ALL_PATTERNS[0], false);
-renderProfileList();
-highlightActiveSwatch();
-highlightHwSwatch();
-log('READY. SELECT PATTERN & CONNECT.');
+// ── Settings Persistence ──────────────────────────────────────────────────────
+const SETTINGS_KEY = 'mk1300_rgb_settings';
+
+function saveSettings() {
+  const settings = {
+    currentTab,
+    activeCat,
+    currentPatternId: currentPattern ? currentPattern.id : null,
+    brightness: bSlider.value,
+    hwMode: hwMode.value,
+    hwSpeed: hwSpeed.value,
+    hwBright: hwBright.value,
+    hwColor: hwCurrentColorHex,
+    customColors,
+    paintColor,
+    customAutoPush: customAutoPush.checked
+  };
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+}
+
+function loadSettings() {
+  const raw = localStorage.getItem(SETTINGS_KEY);
+  if (!raw) return;
+  try {
+    const s = JSON.parse(raw);
+    
+    if (s.currentTab) currentTab = s.currentTab;
+    if (s.activeCat) activeCat = s.activeCat;
+    if (s.currentPatternId) {
+      const p = ALL_PATTERNS.find(x => x.id === s.currentPatternId);
+      if (p) currentPattern = p;
+    }
+    if (s.brightness) {
+      bSlider.value = s.brightness;
+      bVal.textContent = s.brightness;
+    }
+    
+    if (s.hwMode) hwMode.value = s.hwMode;
+    if (s.hwSpeed) {
+      hwSpeed.value = s.hwSpeed;
+      hwSpeedVal.textContent = s.hwSpeed;
+    }
+    if (s.hwBright) {
+      hwBright.value = s.hwBright;
+      hwBrightVal.textContent = s.hwBright;
+    }
+    if (s.hwColor) {
+      hwCurrentColorHex = s.hwColor;
+      if (hwCurrentColorHex !== 'multi') hwColorPicker.value = hwCurrentColorHex;
+    }
+    
+    if (s.customColors && Array.isArray(s.customColors)) {
+      customColors = s.customColors;
+      // Safety: Pad if layout changed or data is incomplete
+      while (customColors.length < KEYBOARD_LAYOUT.length) {
+        customColors.push({ r: 0, g: 0, b: 0 });
+      }
+    }
+    if (s.paintColor) {
+      paintColor = s.paintColor;
+      customColorPicker.value = rgbToHex(paintColor.r, paintColor.g, paintColor.b);
+    }
+    if (s.customAutoPush !== undefined) {
+      customAutoPush.checked = s.customAutoPush;
+    }
+  } catch (e) {
+    console.error('Failed to load settings', e);
+  }
+}
 
 // ── Browser Support Check ─────────────────────────────────────────────────────
 const modalOverlay = document.getElementById('browser-modal-overlay');
@@ -888,6 +970,24 @@ modalClose.addEventListener('click', () => {
   }
   modalOverlay.classList.remove('active');
 });
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+loadSettings();
+buildKeyboard();
+buildCatTabs();
+buildGrid();
+switchTab(currentTab);
+// Initial pattern/viz application (non-hardware)
+if (currentTab === 'software') {
+  applyPattern(currentPattern, false);
+} else if (currentTab === 'custom') {
+  refreshCustomKeyboard();
+}
+renderProfileList();
+highlightActiveSwatch();
+highlightHwSwatch();
+log('READY. SELECT PATTERN & CONNECT.');
+
 
 // ── UI Theme ──────────────────────────────────────────────────────────────────
 const THEME_KEY = 'mk1300_ui_theme';
