@@ -180,8 +180,13 @@
           <div class="custom-toolbar-right">
             <div class="custom-actions">
               <button id="custom-fill" class="pixel-btn custom-action-btn" title="Fill all keys">[ FILL ALL ]</button>
+              <button id="custom-import" class="pixel-btn custom-action-btn" title="Import current Software Sync preset">[ IMPORT FROM SYNC ]</button>
               <button id="custom-clear" class="pixel-btn custom-action-btn" title="Clear all keys">[ CLEAR ]</button>
               <button id="custom-undo" class="pixel-btn custom-action-btn" title="Undo last change">[ UNDO ]</button>
+            </div>
+            <div class="custom-bright-wrap" style="margin: 8px 0; max-width: 220px;">
+              <div class="pixel-label" style="margin-bottom:6px;">// BOOST/DIM > <span id="custom-bright-val" class="accent">100</span>%</div>
+              <input type="range" id="custom-bright-slider" class="pixel-slider" min="0" max="400" value="100" step="25">
             </div>
             <div class="custom-push-row">
               <button id="custom-push" class="pixel-btn custom-push-btn">[ PUSH TO KEYBOARD ]</button>
@@ -189,6 +194,87 @@
                 <input type="checkbox" id="custom-autopush" checked>
                 <span class="vt">AUTO-PUSH</span>
               </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Preset Generator ── -->
+        <div class="gen-section">
+          <div class="gen-header" id="gen-toggle">
+            <span class="pixel-label" style="margin:0;cursor:pointer;">// 🎲 PRESET GENERATOR</span>
+            <span class="gen-arrow vt" id="gen-arrow">▶</span>
+          </div>
+          <div class="gen-body" id="gen-body" style="display:none;">
+            <div class="gen-row">
+              <div class="gen-group">
+                <div class="pixel-label" style="margin-bottom:4px">STYLE</div>
+                <select id="gen-style" class="pixel-select gen-select">
+                  <optgroup label="── Color Theory ──">
+                    <option value="gradient">🌈 Gradient Blend</option>
+                    <option value="analogous">🎨 Analogous Harmony</option>
+                    <option value="complementary">⚡ Complementary</option>
+                    <option value="triadic">🔺 Triadic</option>
+                    <option value="split">💎 Split-Complementary</option>
+                  </optgroup>
+                  <optgroup label="── Themes ──">
+                    <option value="sunset">🌅 Sunset</option>
+                    <option value="ocean">🌊 Deep Ocean</option>
+                    <option value="forest">🌿 Forest</option>
+                    <option value="ice">❄️ Frozen</option>
+                    <option value="lava">🌋 Lava Flow</option>
+                    <option value="heatmap">🔥 Heatmap</option>
+                    <option value="galaxy">🌌 Galaxy Nebula</option>
+                    <option value="aurora">🎇 Aurora Borealis</option>
+                    <option value="volcanic">🌋 Volcanic Cracks</option>
+                  </optgroup>
+                  <optgroup label="── Aesthetic ──">
+                    <option value="cyberpunk">⚡ Cyberpunk</option>
+                    <option value="neon">💜 Neon Glow</option>
+                    <option value="retrowave">🕹️ Retrowave</option>
+                    <option value="stealth">🖤 Stealth</option>
+                    <option value="pastel">🌸 Pastel Dream</option>
+                    <option value="candy">🍬 Candy Pop</option>
+                    <option value="monochrome">⬛ Monochrome</option>
+                    <option value="rgbwave">🌈 RGB Wave</option>
+                    <option value="matrixrain">💚 Matrix Rain</option>
+                  </optgroup>
+                  <optgroup label="── Special ──">
+                    <option value="starfield">✨ Starfield</option>
+                    <option value="zoneaccent">🎮 Zone Accent</option>
+                  </optgroup>
+                </select>
+              </div>
+              <div class="gen-group">
+                <div class="pixel-label" style="margin-bottom:4px">DIRECTION</div>
+                <select id="gen-direction" class="pixel-select gen-select">
+                  <optgroup label="── Linear ──">
+                    <option value="horizontal">→ Left to Right</option>
+                    <option value="horizontal-rev">← Right to Left</option>
+                    <option value="vertical">↓ Top to Bottom</option>
+                    <option value="vertical-rev">↑ Bottom to Top</option>
+                    <option value="diagonal">↗ Diagonal</option>
+                    <option value="diagonal-rev">↙ Diagonal Reverse</option>
+                  </optgroup>
+                  <optgroup label="── Radial ──">
+                    <option value="radial">◎ Center Out</option>
+                    <option value="radial-rev">◉ Edges In</option>
+                    <option value="corner-tl">◤ From Top-Left</option>
+                    <option value="corner-br">◢ From Bottom-Right</option>
+                  </optgroup>
+                  <optgroup label="── Pattern ──">
+                    <option value="wave">〰️ Sine Wave</option>
+                    <option value="rows">☰ Per Row</option>
+                    <option value="columns">║ Per Column</option>
+                    <option value="checker">▦ Checkerboard</option>
+                    <option value="random">🎲 Scatter</option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
+            <div class="gen-actions">
+              <button id="gen-generate" class="pixel-btn gen-btn">[ GENERATE ]</button>
+              <button id="gen-surprise" class="pixel-btn gen-btn gen-surprise-btn">[ ✨ SURPRISE ME ]</button>
+              <button id="gen-reroll" class="pixel-btn gen-btn">[ 🔄 REROLL ]</button>
             </div>
           </div>
         </div>

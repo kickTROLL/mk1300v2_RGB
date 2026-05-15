@@ -517,10 +517,13 @@ const customKb         = document.getElementById('custom-keyboard');
 const customColorPicker = document.getElementById('custom-color-picker');
 const customSwatches   = document.getElementById('custom-swatches');
 const customFill       = document.getElementById('custom-fill');
+const customImport     = document.getElementById('custom-import');
 const customClear      = document.getElementById('custom-clear');
 const customUndo       = document.getElementById('custom-undo');
 const customPush       = document.getElementById('custom-push');
 const customAutoPush   = document.getElementById('custom-autopush');
+const customBrightSlider = document.getElementById('custom-bright-slider');
+const customBrightVal    = document.getElementById('custom-bright-val');
 const customSelectCount = document.getElementById('custom-select-count');
 const profileNameInput = document.getElementById('profile-name');
 const profileSaveBtn   = document.getElementById('profile-save');
@@ -635,10 +638,20 @@ function applyPaintToSelected() {
   saveSettings();
 }
 
+function getCustomColorsWithBrightness() {
+  const br = parseInt(customBrightSlider.value) / 100;
+  return customColors.map(c => ({
+    r: Math.min(255, Math.round(c.r * br)),
+    g: Math.min(255, Math.round(c.g * br)),
+    b: Math.min(255, Math.round(c.b * br)),
+  }));
+}
+
 function refreshCustomKeyboard() {
+  const brightColors = getCustomColorsWithBrightness();
   customKb.querySelectorAll('.custom-key').forEach(el => {
     const i = parseInt(el.dataset.idx);
-    const c = customColors[i] || { r: 0, g: 0, b: 0 };
+    const c = brightColors[i] || { r: 0, g: 0, b: 0 };
     el.style.backgroundColor = `rgb(${c.r},${c.g},${c.b})`;
     const bright = Math.max(c.r, c.g, c.b);
     el.style.boxShadow = bright > 20
@@ -646,7 +659,7 @@ function refreshCustomKeyboard() {
       : 'none';
   });
   // Also update sidebar preview
-  applyViz(customColors);
+  applyViz(brightColors);
 }
 
 async function pushCustomToHW() {
@@ -654,12 +667,13 @@ async function pushCustomToHW() {
   if (sendPending) return;
   sendPending = true;
   try {
+    const brightColors = getCustomColorsWithBrightness();
     const flat = new Array(KEY_COUNT * 3).fill(0);
     KEYBOARD_LAYOUT.forEach((key, i) => {
-      if (customColors[i]) {
-        flat[key.index * 3]     = customColors[i].r;
-        flat[key.index * 3 + 1] = customColors[i].g;
-        flat[key.index * 3 + 2] = customColors[i].b;
+      if (brightColors[i]) {
+        flat[key.index * 3]     = brightColors[i].r;
+        flat[key.index * 3 + 1] = brightColors[i].g;
+        flat[key.index * 3 + 2] = brightColors[i].b;
       }
     });
     await driver.setAllKeyColors(flat, KEY_COUNT);
@@ -695,6 +709,12 @@ function highlightActiveSwatch() {
 }
 
 customAutoPush.addEventListener('change', saveSettings);
+customBrightSlider.addEventListener('input', () => {
+  customBrightVal.textContent = customBrightSlider.value;
+  refreshCustomKeyboard();
+  if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
+});
 
 // ── Action buttons ──────────────────────────────────────────────────────────
 customFill.addEventListener('click', () => {
@@ -704,6 +724,21 @@ customFill.addEventListener('click', () => {
   if (customAutoPush.checked) pushCustomToHW();
   saveSettings();
   log('Filled all keys');
+});
+
+customImport.addEventListener('click', () => {
+  saveUndoState();
+  // Import RAW colors (at full brightness)
+  const colors = currentPattern.fn(KEYBOARD_LAYOUT).map(c => ({
+    r: Math.round(c.r),
+    g: Math.round(c.g),
+    b: Math.round(c.b),
+  }));
+  customColors = colors.map(c => ({ ...c }));
+  refreshCustomKeyboard();
+  if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
+  log(`Imported "${currentPattern.name}" at full brightness`);
 });
 
 customClear.addEventListener('click', () => {
@@ -725,6 +760,523 @@ customUndo.addEventListener('click', () => {
 });
 
 customPush.addEventListener('click', () => pushCustomToHW());
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ── PRESET GENERATOR ─────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+
+const genToggle    = document.getElementById('gen-toggle');
+const genArrow     = document.getElementById('gen-arrow');
+const genBody      = document.getElementById('gen-body');
+const genStyle     = document.getElementById('gen-style');
+const genDirection = document.getElementById('gen-direction');
+const genGenerate  = document.getElementById('gen-generate');
+const genSurprise  = document.getElementById('gen-surprise');
+const genReroll    = document.getElementById('gen-reroll');
+
+let lastGenSeed = Date.now();
+
+// Toggle panel
+genToggle.addEventListener('click', () => {
+  const open = genBody.style.display === 'none';
+  genBody.style.display = open ? 'block' : 'none';
+  genArrow.classList.toggle('open', open);
+});
+
+// ── HSL helper (local to generator) ─────────────────────────────────────────
+function genHsl(h, s, l) {
+  h = ((h % 360) + 360) % 360;
+  s = Math.max(0, Math.min(1, s));
+  l = Math.max(0, Math.min(1, l));
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const x = c * (1 - Math.abs((h / 60) % 2 - 1));
+  const m = l - c / 2;
+  let r, g, b;
+  if (h < 60)       { r = c; g = x; b = 0; }
+  else if (h < 120) { r = x; g = c; b = 0; }
+  else if (h < 180) { r = 0; g = c; b = x; }
+  else if (h < 240) { r = 0; g = x; b = c; }
+  else if (h < 300) { r = x; g = 0; b = c; }
+  else              { r = c; g = 0; b = x; }
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255),
+  };
+}
+
+// Blend two colors by t (0-1)
+function lerpColor(a, b, t) {
+  return {
+    r: Math.round(a.r + (b.r - a.r) * t),
+    g: Math.round(a.g + (b.g - a.g) * t),
+    b: Math.round(a.b + (b.b - a.b) * t),
+  };
+}
+
+// Blend across a palette array by t (0-1)
+function samplePalette(palette, t) {
+  t = Math.max(0, Math.min(1, t));
+  const idx = t * (palette.length - 1);
+  const lo = Math.floor(idx);
+  const hi = Math.min(lo + 1, palette.length - 1);
+  const frac = idx - lo;
+  return lerpColor(palette[lo], palette[hi], frac);
+}
+
+// Seeded pseudo-random for reproducible results
+function seededRandom(seed) {
+  let s = seed;
+  return function() {
+    s = (s * 16807 + 0) % 2147483647;
+    return (s - 1) / 2147483646;
+  };
+}
+
+// Get key position as 0-1 based on direction
+function getKeyT(key, direction, rand) {
+  const kx = (key.x + key.w / 2) / KB_WIDTH;
+  const ky = (key.y + key.h / 2) / KB_HEIGHT;
+  switch (direction) {
+    case 'horizontal':     return kx;
+    case 'horizontal-rev': return 1 - kx;
+    case 'vertical':       return ky;
+    case 'vertical-rev':   return 1 - ky;
+    case 'diagonal':       return (kx * 0.6 + ky * 0.4);
+    case 'diagonal-rev':   return 1 - (kx * 0.6 + ky * 0.4);
+    case 'radial': {
+      const dx = kx - 0.5, dy = ky - 0.5;
+      return Math.min(1, Math.sqrt(dx * dx + dy * dy) * 2);
+    }
+    case 'radial-rev': {
+      const dx = kx - 0.5, dy = ky - 0.5;
+      return 1 - Math.min(1, Math.sqrt(dx * dx + dy * dy) * 2);
+    }
+    case 'corner-tl': {
+      return Math.min(1, Math.sqrt(kx * kx + ky * ky) / Math.sqrt(2) * 1.5);
+    }
+    case 'corner-br': {
+      const dx = 1 - kx, dy = 1 - ky;
+      return Math.min(1, Math.sqrt(dx * dx + dy * dy) / Math.sqrt(2) * 1.5);
+    }
+    case 'wave': {
+      // Sine wave across x, modulated by y
+      return (Math.sin(kx * Math.PI * 3 + ky * 2) * 0.5 + 0.5);
+    }
+    case 'rows':    return ky;  // snaps per row via palette sampling
+    case 'columns': return kx;  // snaps per column via palette sampling
+    case 'checker': {
+      const col = Math.floor(key.x + key.w / 2);
+      const row = Math.round(key.y);
+      return ((col + row) % 2 === 0) ? 0 : 1;
+    }
+    case 'random':  return rand();
+    default:        return kx;
+  }
+}
+
+// ── Curated palettes for themed generators ──────────────────────────────────
+
+function getThemedPalette(style, baseHue, rand) {
+  switch (style) {
+    case 'gradient': {
+      // Pick 3 harmonious hues spread 40-80° apart
+      const spread = 40 + rand() * 40;
+      return [
+        genHsl(baseHue, 0.85 + rand() * 0.15, 0.45 + rand() * 0.1),
+        genHsl(baseHue + spread, 0.80 + rand() * 0.2, 0.50 + rand() * 0.1),
+        genHsl(baseHue + spread * 2, 0.85 + rand() * 0.15, 0.48 + rand() * 0.1),
+      ];
+    }
+    case 'analogous': {
+      // 3 hues within 30° of each other — always looks cohesive
+      return [
+        genHsl(baseHue - 25, 0.90, 0.42),
+        genHsl(baseHue, 1, 0.52),
+        genHsl(baseHue + 25, 0.90, 0.42),
+      ];
+    }
+    case 'complementary': {
+      // Two opposite hues with a dark midpoint
+      return [
+        genHsl(baseHue, 1, 0.52),
+        genHsl(baseHue, 0.6, 0.15),
+        genHsl(baseHue + 180, 1, 0.52),
+      ];
+    }
+    case 'triadic': {
+      // Three equally spaced hues — vibrant and balanced
+      return [
+        genHsl(baseHue, 1, 0.50),
+        genHsl(baseHue + 120, 1, 0.48),
+        genHsl(baseHue + 240, 1, 0.50),
+      ];
+    }
+    case 'split': {
+      // Base + two colors 150° apart from it
+      return [
+        genHsl(baseHue, 1, 0.50),
+        genHsl(baseHue + 150, 0.90, 0.45),
+        genHsl(baseHue + 210, 0.90, 0.45),
+      ];
+    }
+    case 'starfield': {
+      // Dark base with occasional bright "stars"
+      const starHue = baseHue;
+      return [
+        genHsl(230 + rand() * 30, 0.4, 0.04),       // deep space
+        genHsl(230 + rand() * 30, 0.5, 0.08),        // slightly brighter space
+        genHsl(starHue, 0.3, 0.85),                   // star white
+      ];
+    }
+    case 'heatmap': {
+      return [
+        genHsl(0, 0.2, 0.05),        // black/charcoal
+        genHsl(0, 1, 0.35),           // deep red
+        genHsl(20, 1, 0.50),          // orange
+        genHsl(45, 1, 0.55),          // amber/yellow
+        genHsl(55, 0.5, 0.90),        // near-white hot
+      ];
+    }
+    case 'ocean': {
+      return [
+        genHsl(220, 0.8, 0.08),       // deep abyss
+        genHsl(210, 1, 0.25),          // dark navy
+        genHsl(195, 1, 0.40),          // ocean blue
+        genHsl(185, 1, 0.55),          // bright teal
+      ];
+    }
+    case 'neon': {
+      // Two vivid neon colors on a near-black base
+      const h2 = baseHue + 90 + rand() * 90;
+      return [
+        genHsl(baseHue, 1, 0.55),
+        genHsl(0, 0, 0.03),
+        genHsl(h2, 1, 0.55),
+      ];
+    }
+    case 'forest': {
+      return [
+        genHsl(120, 0.6, 0.10),       // dark forest floor
+        genHsl(100, 0.7, 0.25),        // deep green
+        genHsl(85, 0.8, 0.40),         // bright green
+        genHsl(65, 0.9, 0.50),         // lime highlight
+      ];
+    }
+    case 'sunset': {
+      return [
+        genHsl(270, 0.6, 0.20),        // deep purple sky
+        genHsl(330, 0.9, 0.42),         // magenta
+        genHsl(10, 1, 0.50),            // red-orange
+        genHsl(40, 1, 0.55),            // golden
+        genHsl(55, 0.9, 0.70),          // pale yellow
+      ];
+    }
+    case 'ice': {
+      return [
+        genHsl(210, 0.5, 0.12),        // dark ice
+        genHsl(200, 0.7, 0.40),         // cold blue
+        genHsl(190, 0.6, 0.65),         // light cyan
+        genHsl(195, 0.3, 0.88),         // near-white frost
+      ];
+    }
+    case 'lava': {
+      return [
+        genHsl(0, 0.3, 0.04),          // obsidian black
+        genHsl(5, 1, 0.30),             // deep red
+        genHsl(20, 1, 0.48),            // fiery orange
+        genHsl(45, 1, 0.55),            // molten gold
+      ];
+    }
+    case 'cyberpunk': {
+      return [
+        genHsl(300, 1, 0.52),           // hot magenta
+        genHsl(0, 0, 0.04),             // near-black
+        genHsl(186, 1, 0.52),           // electric cyan
+      ];
+    }
+    case 'pastel': {
+      // Soft, dreamy pastels
+      const h2 = baseHue + 60 + rand() * 60;
+      const h3 = h2 + 60 + rand() * 60;
+      return [
+        genHsl(baseHue, 0.65, 0.75),
+        genHsl(h2, 0.60, 0.78),
+        genHsl(h3, 0.55, 0.76),
+      ];
+    }
+    case 'monochrome': {
+      // Single hue, varied lightness
+      return [
+        genHsl(baseHue, 0.7, 0.10),
+        genHsl(baseHue, 0.8, 0.30),
+        genHsl(baseHue, 0.9, 0.50),
+        genHsl(baseHue, 0.6, 0.70),
+      ];
+    }
+    case 'galaxy': {
+      // Deep space purples with bright nebula pinks and blues
+      return [
+        genHsl(260, 0.6, 0.06),         // void
+        genHsl(280, 0.8, 0.25),          // deep purple nebula
+        genHsl(320, 1, 0.50),            // bright pink nebula
+        genHsl(210, 0.9, 0.55),          // blue star region
+        genHsl(260, 0.3, 0.85),          // white star core
+      ];
+    }
+    case 'aurora': {
+      // Northern lights: greens, teals, purples, and occasional pink
+      return [
+        genHsl(130, 0.8, 0.20),          // deep green base
+        genHsl(160, 1, 0.45),            // bright teal
+        genHsl(140, 1, 0.55),            // vivid green
+        genHsl(280, 0.8, 0.45),          // purple shimmer
+        genHsl(320, 0.7, 0.55),          // pink tip
+      ];
+    }
+    case 'volcanic': {
+      // Dark crust with glowing cracks of lava
+      return [
+        genHsl(0, 0.15, 0.04),           // black rock
+        genHsl(15, 1, 0.40),             // glowing crack
+        genHsl(0, 0.15, 0.06),           // dark rock
+        genHsl(30, 1, 0.50),             // bright lava
+        genHsl(0, 0.1, 0.03),            // charcoal
+      ];
+    }
+    case 'retrowave': {
+      // 80s aesthetics: hot pink, electric blue, dark purple
+      return [
+        genHsl(260, 0.7, 0.12),          // dark purple bg
+        genHsl(280, 0.9, 0.35),          // mid purple
+        genHsl(330, 1, 0.55),            // hot pink
+        genHsl(200, 1, 0.55),            // electric blue
+      ];
+    }
+    case 'stealth': {
+      // Very dark, subtle — almost invisible accents
+      const accentHue = baseHue;
+      return [
+        genHsl(0, 0, 0.02),              // near-black
+        genHsl(accentHue, 0.5, 0.08),    // barely visible accent
+        genHsl(accentHue, 0.7, 0.15),    // subtle glow
+        genHsl(0, 0, 0.04),              // dark grey
+      ];
+    }
+    case 'candy': {
+      // Bright, fun, saturated colors — no dark tones
+      return [
+        genHsl(350, 0.9, 0.60),          // bright pink
+        genHsl(45, 1, 0.58),             // yellow
+        genHsl(160, 0.9, 0.52),          // mint green
+        genHsl(280, 0.8, 0.60),          // purple
+        genHsl(200, 0.9, 0.58),          // sky blue
+      ];
+    }
+    case 'rgbwave': {
+      // Classic RGB rainbow sweep
+      return [
+        genHsl(0, 1, 0.50),             // red
+        genHsl(30, 1, 0.50),            // orange
+        genHsl(60, 1, 0.50),            // yellow
+        genHsl(120, 1, 0.45),           // green
+        genHsl(180, 1, 0.48),           // cyan
+        genHsl(240, 1, 0.50),           // blue
+        genHsl(300, 1, 0.50),           // magenta
+      ];
+    }
+    case 'matrixrain': {
+      // Greens only: dark to bright
+      return [
+        genHsl(120, 0.8, 0.03),          // near-black
+        genHsl(120, 1, 0.15),            // dark green
+        genHsl(120, 1, 0.35),            // mid green
+        genHsl(115, 1, 0.55),            // bright green
+      ];
+    }
+    case 'zoneaccent': {
+      // This is handled specially in generatePreset
+      return [
+        genHsl(baseHue, 1, 0.52),
+        genHsl(baseHue + 180, 0.9, 0.48),
+      ];
+    }
+    default:
+      return [
+        genHsl(baseHue, 1, 0.50),
+        genHsl(baseHue + 120, 1, 0.50),
+      ];
+  }
+}
+
+// ── Main generation function ────────────────────────────────────────────────
+
+function generatePreset(style, direction, seed) {
+  const rand = seededRandom(seed);
+  const baseHue = Math.floor(rand() * 360);
+  const palette = getThemedPalette(style, baseHue, rand);
+
+  // Special handling for starfield — it's scatter-based, not gradient-based
+  if (style === 'starfield') {
+    return KEYBOARD_LAYOUT.map(key => {
+      const roll = rand();
+      if (roll > 0.88) {
+        // Bright star — white/blue tint
+        const starL = 0.70 + rand() * 0.25;
+        const starH = 200 + rand() * 40;
+        return genHsl(starH, 0.15 + rand() * 0.3, starL);
+      }
+      if (roll > 0.78) {
+        // Dim star
+        return genHsl(220 + rand() * 30, 0.4, 0.15 + rand() * 0.10);
+      }
+      // Dark space
+      return genHsl(230 + rand() * 20, 0.35 + rand() * 0.2, 0.03 + rand() * 0.04);
+    });
+  }
+
+  // Special handling for neon — alternating neon + dark
+  if (style === 'neon' && direction !== 'random') {
+    return KEYBOARD_LAYOUT.map(key => {
+      const t = getKeyT(key, direction, rand);
+      const wave = Math.sin(t * Math.PI * 3) * 0.5 + 0.5;
+      if (wave > 0.6) return palette[0];
+      if (wave < 0.4) return palette[2];
+      return palette[1];
+    });
+  }
+
+  // Galaxy — Perlin-like noise for organic nebula clouds
+  if (style === 'galaxy') {
+    return KEYBOARD_LAYOUT.map((key, i) => {
+      const kx = (key.x + key.w / 2) / KB_WIDTH;
+      const ky = (key.y + key.h / 2) / KB_HEIGHT;
+      // Layered pseudo-noise for organic feel
+      const n1 = Math.sin(kx * 7.3 + ky * 4.1 + rand() * 0.3) * 0.5 + 0.5;
+      const n2 = Math.sin(kx * 3.7 + ky * 8.2 + rand() * 0.2) * 0.5 + 0.5;
+      const noise = (n1 * 0.6 + n2 * 0.4);
+      // Occasional bright stars
+      const star = rand();
+      if (star > 0.90) return genHsl(200 + rand() * 60, 0.2, 0.80 + rand() * 0.15);
+      return samplePalette(palette, noise);
+    });
+  }
+
+  // Matrix Rain — random brightness per-column, all green
+  if (style === 'matrixrain') {
+    // Pre-generate column brightness
+    const colBright = [];
+    for (let c = 0; c < 16; c++) colBright.push(rand());
+    return KEYBOARD_LAYOUT.map(key => {
+      const col = Math.floor(key.x + key.w / 2);
+      const ky = (key.y + key.h / 2) / KB_HEIGHT;
+      const colVal = colBright[col] || rand();
+      // Combine column brightness with row position for "drip" effect
+      const t = (colVal * 0.6 + ky * 0.4);
+      const jitter = rand() * 0.15;
+      return samplePalette(palette, Math.max(0, Math.min(1, t + jitter)));
+    });
+  }
+
+  // Volcanic — dark base with random glowing "cracks"
+  if (style === 'volcanic') {
+    return KEYBOARD_LAYOUT.map(key => {
+      const kx = (key.x + key.w / 2) / KB_WIDTH;
+      const ky = (key.y + key.h / 2) / KB_HEIGHT;
+      // Noise-based crack detection
+      const crack = Math.sin(kx * 11 + ky * 7) * Math.cos(kx * 5 - ky * 13);
+      const isCrack = Math.abs(crack) > 0.35 + rand() * 0.2;
+      if (isCrack) {
+        const heat = 0.5 + rand() * 0.5;
+        return samplePalette(palette, heat); // Glowing lava colors
+      }
+      // Dark rock with subtle variation
+      return genHsl(0 + rand() * 20, 0.1 + rand() * 0.1, 0.03 + rand() * 0.03);
+    });
+  }
+
+  // Zone Accent — smart coloring based on key type
+  if (style === 'zoneaccent') {
+    const accentColor = palette[0];
+    const secondColor = palette[1];
+    const MODS = new Set(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','←','Enter','Space']);
+    const NUMS = new Set(['1','2','3','4','5','6','7','8','9','0','-','=']);
+    return KEYBOARD_LAYOUT.map(key => {
+      if (MODS.has(key.name)) return accentColor;
+      if (NUMS.has(key.name)) return lerpColor(accentColor, secondColor, 0.5);
+      // Alpha keys: very dim version of accent
+      return genHsl(baseHue, 0.5, 0.08 + rand() * 0.04);
+    });
+  }
+
+  // Rows/columns — snap to discrete palette stops instead of smooth gradient
+  if (direction === 'rows') {
+    return KEYBOARD_LAYOUT.map(key => {
+      const row = Math.round(key.y);
+      const t = row / 4; // 5 rows: 0, 0.25, 0.5, 0.75, 1
+      const jitter = (rand() - 0.5) * 0.03;
+      return samplePalette(palette, Math.max(0, Math.min(1, t + jitter)));
+    });
+  }
+
+  if (direction === 'columns') {
+    return KEYBOARD_LAYOUT.map(key => {
+      const col = Math.floor(key.x + key.w / 2);
+      const t = col / 14; // ~15 columns
+      const jitter = (rand() - 0.5) * 0.03;
+      return samplePalette(palette, Math.max(0, Math.min(1, t + jitter)));
+    });
+  }
+
+  // Standard gradient-based generation
+  return KEYBOARD_LAYOUT.map(key => {
+    const t = getKeyT(key, direction, rand);
+    // Add subtle variation so it's not perfectly flat
+    const jitter = (rand() - 0.5) * 0.04;
+    const adjT = Math.max(0, Math.min(1, t + jitter));
+    return samplePalette(palette, adjT);
+  });
+}
+
+// ── Event handlers ──────────────────────────────────────────────────────────
+
+function applyGenerated(style, direction) {
+  lastGenSeed = Date.now() + Math.floor(Math.random() * 100000);
+  saveUndoState();
+  customColors = generatePreset(style, direction, lastGenSeed);
+  refreshCustomKeyboard();
+  if (customAutoPush.checked) pushCustomToHW();
+  saveSettings();
+  log(`Generated: ${style} (${direction})`);
+}
+
+genGenerate.addEventListener('click', () => {
+  applyGenerated(genStyle.value, genDirection.value);
+});
+
+genReroll.addEventListener('click', () => {
+  applyGenerated(genStyle.value, genDirection.value);
+});
+
+genSurprise.addEventListener('click', () => {
+  const styles = [
+    'gradient','analogous','complementary','triadic','split',
+    'starfield','heatmap','ocean','neon','forest','sunset','ice','lava',
+    'cyberpunk','pastel','monochrome',
+    'galaxy','aurora','volcanic','retrowave','stealth','candy',
+    'rgbwave','matrixrain','zoneaccent'
+  ];
+  const dirs = [
+    'horizontal','horizontal-rev','vertical','vertical-rev',
+    'diagonal','diagonal-rev','radial','radial-rev',
+    'corner-tl','corner-br','wave','rows','columns','checker','random'
+  ];
+  const rStyle = styles[Math.floor(Math.random() * styles.length)];
+  const rDir   = dirs[Math.floor(Math.random() * dirs.length)];
+  genStyle.value = rStyle;
+  genDirection.value = rDir;
+  applyGenerated(rStyle, rDir);
+});
 
 // ══════════════════════════════════════════════════════════════════════════════
 // ── PROFILES ─────────────────────────────────────────────────────────────────
@@ -898,7 +1450,8 @@ function saveSettings() {
     hwColor: hwCurrentColorHex,
     customColors,
     paintColor,
-    customAutoPush: customAutoPush.checked
+    customAutoPush: customAutoPush.checked,
+    customBrightness: customBrightSlider.value
   };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
@@ -947,6 +1500,10 @@ function loadSettings() {
     }
     if (s.customAutoPush !== undefined) {
       customAutoPush.checked = s.customAutoPush;
+    }
+    if (s.customBrightness) {
+      customBrightSlider.value = s.customBrightness;
+      customBrightVal.textContent = s.customBrightness;
     }
   } catch (e) {
     console.error('Failed to load settings', e);

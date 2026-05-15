@@ -653,6 +653,69 @@ body {
   text-shadow: 0 0 6px rgba(0,255,136,0.5);
 }
 
+/* ── Preset Generator ── */
+.gen-section {
+  border-top: 2px solid rgba(0,245,255,0.15);
+  border-bottom: 2px solid rgba(0,245,255,0.15);
+  background: var(--bg2);
+}
+.gen-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s;
+}
+.gen-header:hover {
+  background: rgba(0,245,255,0.05);
+}
+.gen-arrow {
+  font-size: 14px;
+  color: var(--cyan);
+  transition: transform 0.2s;
+}
+.gen-arrow.open {
+  transform: rotate(90deg);
+}
+.gen-body {
+  padding: 0 20px 16px;
+}
+.gen-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+.gen-group {
+  flex: 1;
+  min-width: 140px;
+}
+.gen-select {
+  font-size: 14px !important;
+  padding: 6px 8px !important;
+}
+.gen-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.gen-btn {
+  font-size: 8px !important;
+  padding: 8px 14px !important;
+  width: auto !important;
+}
+.gen-surprise-btn {
+  border-color: var(--cyan) !important;
+  color: var(--cyan) !important;
+  box-shadow: 3px 3px 0 rgba(0,245,255,0.3) !important;
+}
+.gen-surprise-btn:hover {
+  background: rgba(0,245,255,0.1) !important;
+  box-shadow: 4px 4px 0 rgba(0,245,255,0.5), 0 0 12px rgba(0,245,255,0.3) !important;
+}
+
 /* ── Custom Keyboard ── */
 .custom-keyboard-wrap {
   padding: 12px 0;
