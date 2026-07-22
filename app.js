@@ -7,6 +7,7 @@ const ALL_PATTERNS = [...PATTERNS, ...EXTRA_PATTERNS];
 
 
 const driver = new HIDDriver();
+window.driver = driver;
 let currentPattern = ALL_PATTERNS[0];
 let currentColors  = [];
 let activeCat      = 'all';
@@ -368,6 +369,11 @@ async function connectDevice() {
         await driver.setHardwareAnimation(16, 4);
         log('OK: custom RGB mode active');
         await applyPattern(currentPattern, true);
+      } else if (currentTab === 'custom') {
+        await driver.setHardwareAnimation(16, 4);
+        log('OK: custom RGB mode active');
+        buildCustomKeyboard();
+        await pushCustomToHW();
       } else {
         await updateHardwareLight();
       }
@@ -877,368 +883,107 @@ function getKeyT(key, direction, rand) {
 
 // ── Curated palettes for themed generators ──────────────────────────────────
 
-function getThemedPalette(style, baseHue, rand) {
+function getThemedPalette(style, baseHue) {
+  const p = (...hexes) => hexes.map(hex => hexToRgb(hex));
   switch (style) {
-    case 'gradient': {
-      // Pick 3 harmonious hues spread 40-80° apart
-      const spread = 40 + rand() * 40;
-      return [
-        genHsl(baseHue, 0.85 + rand() * 0.15, 0.45 + rand() * 0.1),
-        genHsl(baseHue + spread, 0.80 + rand() * 0.2, 0.50 + rand() * 0.1),
-        genHsl(baseHue + spread * 2, 0.85 + rand() * 0.15, 0.48 + rand() * 0.1),
-      ];
-    }
-    case 'analogous': {
-      // 3 hues within 30° of each other — always looks cohesive
-      return [
-        genHsl(baseHue - 25, 0.90, 0.42),
-        genHsl(baseHue, 1, 0.52),
-        genHsl(baseHue + 25, 0.90, 0.42),
-      ];
-    }
-    case 'complementary': {
-      // Two opposite hues with a dark midpoint
-      return [
-        genHsl(baseHue, 1, 0.52),
-        genHsl(baseHue, 0.6, 0.15),
-        genHsl(baseHue + 180, 1, 0.52),
-      ];
-    }
-    case 'triadic': {
-      // Three equally spaced hues — vibrant and balanced
-      return [
-        genHsl(baseHue, 1, 0.50),
-        genHsl(baseHue + 120, 1, 0.48),
-        genHsl(baseHue + 240, 1, 0.50),
-      ];
-    }
-    case 'split': {
-      // Base + two colors 150° apart from it
-      return [
-        genHsl(baseHue, 1, 0.50),
-        genHsl(baseHue + 150, 0.90, 0.45),
-        genHsl(baseHue + 210, 0.90, 0.45),
-      ];
-    }
-    case 'starfield': {
-      // Dark base with occasional bright "stars"
-      const starHue = baseHue;
-      return [
-        genHsl(230 + rand() * 30, 0.4, 0.04),       // deep space
-        genHsl(230 + rand() * 30, 0.5, 0.08),        // slightly brighter space
-        genHsl(starHue, 0.3, 0.85),                   // star white
-      ];
-    }
-    case 'heatmap': {
-      return [
-        genHsl(0, 0.2, 0.05),        // black/charcoal
-        genHsl(0, 1, 0.35),           // deep red
-        genHsl(20, 1, 0.50),          // orange
-        genHsl(45, 1, 0.55),          // amber/yellow
-        genHsl(55, 0.5, 0.90),        // near-white hot
-      ];
-    }
-    case 'ocean': {
-      return [
-        genHsl(220, 0.8, 0.08),       // deep abyss
-        genHsl(210, 1, 0.25),          // dark navy
-        genHsl(195, 1, 0.40),          // ocean blue
-        genHsl(185, 1, 0.55),          // bright teal
-      ];
-    }
-    case 'neon': {
-      // Two vivid neon colors on a near-black base
-      const h2 = baseHue + 90 + rand() * 90;
-      return [
-        genHsl(baseHue, 1, 0.55),
-        genHsl(0, 0, 0.03),
-        genHsl(h2, 1, 0.55),
-      ];
-    }
-    case 'forest': {
-      return [
-        genHsl(120, 0.6, 0.10),       // dark forest floor
-        genHsl(100, 0.7, 0.25),        // deep green
-        genHsl(85, 0.8, 0.40),         // bright green
-        genHsl(65, 0.9, 0.50),         // lime highlight
-      ];
-    }
-    case 'sunset': {
-      return [
-        genHsl(270, 0.6, 0.20),        // deep purple sky
-        genHsl(330, 0.9, 0.42),         // magenta
-        genHsl(10, 1, 0.50),            // red-orange
-        genHsl(40, 1, 0.55),            // golden
-        genHsl(55, 0.9, 0.70),          // pale yellow
-      ];
-    }
-    case 'ice': {
-      return [
-        genHsl(210, 0.5, 0.12),        // dark ice
-        genHsl(200, 0.7, 0.40),         // cold blue
-        genHsl(190, 0.6, 0.65),         // light cyan
-        genHsl(195, 0.3, 0.88),         // near-white frost
-      ];
-    }
-    case 'lava': {
-      return [
-        genHsl(0, 0.3, 0.04),          // obsidian black
-        genHsl(5, 1, 0.30),             // deep red
-        genHsl(20, 1, 0.48),            // fiery orange
-        genHsl(45, 1, 0.55),            // molten gold
-      ];
-    }
-    case 'cyberpunk': {
-      return [
-        genHsl(300, 1, 0.52),           // hot magenta
-        genHsl(0, 0, 0.04),             // near-black
-        genHsl(186, 1, 0.52),           // electric cyan
-      ];
-    }
-    case 'pastel': {
-      // Soft, dreamy pastels
-      const h2 = baseHue + 60 + rand() * 60;
-      const h3 = h2 + 60 + rand() * 60;
-      return [
-        genHsl(baseHue, 0.65, 0.75),
-        genHsl(h2, 0.60, 0.78),
-        genHsl(h3, 0.55, 0.76),
-      ];
-    }
-    case 'monochrome': {
-      // Single hue, varied lightness
-      return [
-        genHsl(baseHue, 0.7, 0.10),
-        genHsl(baseHue, 0.8, 0.30),
-        genHsl(baseHue, 0.9, 0.50),
-        genHsl(baseHue, 0.6, 0.70),
-      ];
-    }
-    case 'galaxy': {
-      // Deep space purples with bright nebula pinks and blues
-      return [
-        genHsl(260, 0.6, 0.06),         // void
-        genHsl(280, 0.8, 0.25),          // deep purple nebula
-        genHsl(320, 1, 0.50),            // bright pink nebula
-        genHsl(210, 0.9, 0.55),          // blue star region
-        genHsl(260, 0.3, 0.85),          // white star core
-      ];
-    }
-    case 'aurora': {
-      // Northern lights: greens, teals, purples, and occasional pink
-      return [
-        genHsl(130, 0.8, 0.20),          // deep green base
-        genHsl(160, 1, 0.45),            // bright teal
-        genHsl(140, 1, 0.55),            // vivid green
-        genHsl(280, 0.8, 0.45),          // purple shimmer
-        genHsl(320, 0.7, 0.55),          // pink tip
-      ];
-    }
-    case 'volcanic': {
-      // Dark crust with glowing cracks of lava
-      return [
-        genHsl(0, 0.15, 0.04),           // black rock
-        genHsl(15, 1, 0.40),             // glowing crack
-        genHsl(0, 0.15, 0.06),           // dark rock
-        genHsl(30, 1, 0.50),             // bright lava
-        genHsl(0, 0.1, 0.03),            // charcoal
-      ];
-    }
-    case 'retrowave': {
-      // 80s aesthetics: hot pink, electric blue, dark purple
-      return [
-        genHsl(260, 0.7, 0.12),          // dark purple bg
-        genHsl(280, 0.9, 0.35),          // mid purple
-        genHsl(330, 1, 0.55),            // hot pink
-        genHsl(200, 1, 0.55),            // electric blue
-      ];
-    }
-    case 'stealth': {
-      // Very dark, subtle — almost invisible accents
-      const accentHue = baseHue;
-      return [
-        genHsl(0, 0, 0.02),              // near-black
-        genHsl(accentHue, 0.5, 0.08),    // barely visible accent
-        genHsl(accentHue, 0.7, 0.15),    // subtle glow
-        genHsl(0, 0, 0.04),              // dark grey
-      ];
-    }
-    case 'candy': {
-      // Bright, fun, saturated colors — no dark tones
-      return [
-        genHsl(350, 0.9, 0.60),          // bright pink
-        genHsl(45, 1, 0.58),             // yellow
-        genHsl(160, 0.9, 0.52),          // mint green
-        genHsl(280, 0.8, 0.60),          // purple
-        genHsl(200, 0.9, 0.58),          // sky blue
-      ];
-    }
-    case 'rgbwave': {
-      // Classic RGB rainbow sweep
-      return [
-        genHsl(0, 1, 0.50),             // red
-        genHsl(30, 1, 0.50),            // orange
-        genHsl(60, 1, 0.50),            // yellow
-        genHsl(120, 1, 0.45),           // green
-        genHsl(180, 1, 0.48),           // cyan
-        genHsl(240, 1, 0.50),           // blue
-        genHsl(300, 1, 0.50),           // magenta
-      ];
-    }
-    case 'matrixrain': {
-      // Greens only: dark to bright
-      return [
-        genHsl(120, 0.8, 0.03),          // near-black
-        genHsl(120, 1, 0.15),            // dark green
-        genHsl(120, 1, 0.35),            // mid green
-        genHsl(115, 1, 0.55),            // bright green
-      ];
-    }
-    case 'zoneaccent': {
-      // This is handled specially in generatePreset
-      return [
-        genHsl(baseHue, 1, 0.52),
-        genHsl(baseHue + 180, 0.9, 0.48),
-      ];
-    }
-    default:
-      return [
-        genHsl(baseHue, 1, 0.50),
-        genHsl(baseHue + 120, 1, 0.50),
-      ];
+    case 'gradient':      return [genHsl(baseHue, 0.68, 0.44), genHsl(baseHue + 28, 0.72, 0.52), genHsl(baseHue + 58, 0.66, 0.46)];
+    case 'analogous':     return [genHsl(baseHue - 20, 0.62, 0.42), genHsl(baseHue, 0.76, 0.52), genHsl(baseHue + 20, 0.62, 0.42)];
+    case 'complementary': return [genHsl(baseHue, 0.74, 0.48), genHsl(baseHue + 180, 0.62, 0.44)];
+    case 'triadic':       return [genHsl(baseHue, 0.66, 0.47), genHsl(baseHue + 120, 0.62, 0.44), genHsl(baseHue + 240, 0.64, 0.47)];
+    case 'split':         return [genHsl(baseHue, 0.74, 0.48), genHsl(baseHue + 150, 0.62, 0.44), genHsl(baseHue + 210, 0.62, 0.44)];
+    case 'sunset':        return p('#2a1a3a', '#62306f', '#bf4c79', '#ff7b54', '#ffd166');
+    case 'ocean':         return p('#081a2f', '#0d3b66', '#1e6091', '#2a9d8f', '#79d0d5');
+    case 'forest':        return p('#0f2b1d', '#1b5e20', '#2f7d32', '#74a33c', '#d5c96d');
+    case 'ice':           return p('#102a43', '#1f6f8b', '#5fa8d3', '#9bd1e5', '#dff6ff');
+    case 'lava':          return p('#1f130f', '#672017', '#ad3b1f', '#f46f2b', '#ffd28a');
+    case 'heatmap':       return p('#1b1d2b', '#4c1d3d', '#b13e53', '#f57c51', '#ffd166');
+    case 'neon':          return p('#171125', '#4f2f8f', '#e44cc7', '#31d7ff');
+    case 'cyberpunk':     return p('#120a24', '#442d85', '#e83ca8', '#27d3f2');
+    case 'retrowave':     return p('#170f35', '#4b2a7f', '#cc3f8a', '#45b0f0');
+    case 'pastel':        return p('#ffd9ec', '#ffe8c2', '#d7f4e4', '#d6e9ff', '#e9ddff');
+    case 'monochrome':    return [genHsl(baseHue, 0.28, 0.14), genHsl(baseHue, 0.36, 0.30), genHsl(baseHue, 0.44, 0.46), genHsl(baseHue, 0.38, 0.62)];
+    case 'galaxy':        return p('#0e1024', '#32205f', '#6a2d91', '#c251a7', '#79b3ff');
+    case 'aurora':        return p('#0a1f2f', '#125b68', '#1e9d6d', '#66d17a', '#b66ce5');
+    case 'volcanic':      return p('#171312', '#3a1f1a', '#7d2f1c', '#cf5a2c', '#ffb15c');
+    case 'stealth':       return p('#0a0d11', '#141a22', '#1c2733', '#263545');
+    case 'candy':         return p('#ff6f91', '#ff9671', '#ffc75f', '#7ad7a1', '#66c7ff');
+    case 'rgbwave':       return p('#ff4d4d', '#ffa940', '#fadb14', '#52c41a', '#13c2c2', '#2f54eb', '#b37feb');
+    case 'matrixrain':    return p('#08160c', '#0f3a1b', '#1d7d34', '#63d66b');
+    case 'starfield':     return p('#050812', '#0d1326', '#182445', '#8db4ff');
+    case 'zoneaccent':    return [genHsl(baseHue, 0.72, 0.52), genHsl(baseHue + 180, 0.58, 0.46)];
+    default:              return [genHsl(baseHue, 0.66, 0.46), genHsl(baseHue + 52, 0.60, 0.48)];
   }
-}
-
-// ── Main generation function ────────────────────────────────────────────────
+}// -- Main generation function ------------------------------------------------
 
 function generatePreset(style, direction, seed) {
   const rand = seededRandom(seed);
   const baseHue = Math.floor(rand() * 360);
-  const palette = getThemedPalette(style, baseHue, rand);
+  const palette = getThemedPalette(style, baseHue);
+  const clamp01 = v => Math.max(0, Math.min(1, v));
+  const smooth = t => t * t * (3 - 2 * t);
 
-  // Special handling for starfield — it's scatter-based, not gradient-based
-  if (style === 'starfield') {
-    return KEYBOARD_LAYOUT.map(key => {
-      const roll = rand();
-      if (roll > 0.88) {
-        // Bright star — white/blue tint
-        const starL = 0.70 + rand() * 0.25;
-        const starH = 200 + rand() * 40;
-        return genHsl(starH, 0.15 + rand() * 0.3, starL);
-      }
-      if (roll > 0.78) {
-        // Dim star
-        return genHsl(220 + rand() * 30, 0.4, 0.15 + rand() * 0.10);
-      }
-      // Dark space
-      return genHsl(230 + rand() * 20, 0.35 + rand() * 0.2, 0.03 + rand() * 0.04);
-    });
-  }
-
-  // Special handling for neon — alternating neon + dark
-  if (style === 'neon' && direction !== 'random') {
-    return KEYBOARD_LAYOUT.map(key => {
-      const t = getKeyT(key, direction, rand);
-      const wave = Math.sin(t * Math.PI * 3) * 0.5 + 0.5;
-      if (wave > 0.6) return palette[0];
-      if (wave < 0.4) return palette[2];
-      return palette[1];
-    });
-  }
-
-  // Galaxy — Perlin-like noise for organic nebula clouds
-  if (style === 'galaxy') {
-    return KEYBOARD_LAYOUT.map((key, i) => {
-      const kx = (key.x + key.w / 2) / KB_WIDTH;
-      const ky = (key.y + key.h / 2) / KB_HEIGHT;
-      // Layered pseudo-noise for organic feel
-      const n1 = Math.sin(kx * 7.3 + ky * 4.1 + rand() * 0.3) * 0.5 + 0.5;
-      const n2 = Math.sin(kx * 3.7 + ky * 8.2 + rand() * 0.2) * 0.5 + 0.5;
-      const noise = (n1 * 0.6 + n2 * 0.4);
-      // Occasional bright stars
-      const star = rand();
-      if (star > 0.90) return genHsl(200 + rand() * 60, 0.2, 0.80 + rand() * 0.15);
-      return samplePalette(palette, noise);
-    });
-  }
-
-  // Matrix Rain — random brightness per-column, all green
-  if (style === 'matrixrain') {
-    // Pre-generate column brightness
-    const colBright = [];
-    for (let c = 0; c < 16; c++) colBright.push(rand());
-    return KEYBOARD_LAYOUT.map(key => {
-      const col = Math.floor(key.x + key.w / 2);
-      const ky = (key.y + key.h / 2) / KB_HEIGHT;
-      const colVal = colBright[col] || rand();
-      // Combine column brightness with row position for "drip" effect
-      const t = (colVal * 0.6 + ky * 0.4);
-      const jitter = rand() * 0.15;
-      return samplePalette(palette, Math.max(0, Math.min(1, t + jitter)));
-    });
-  }
-
-  // Volcanic — dark base with random glowing "cracks"
-  if (style === 'volcanic') {
-    return KEYBOARD_LAYOUT.map(key => {
-      const kx = (key.x + key.w / 2) / KB_WIDTH;
-      const ky = (key.y + key.h / 2) / KB_HEIGHT;
-      // Noise-based crack detection
-      const crack = Math.sin(kx * 11 + ky * 7) * Math.cos(kx * 5 - ky * 13);
-      const isCrack = Math.abs(crack) > 0.35 + rand() * 0.2;
-      if (isCrack) {
-        const heat = 0.5 + rand() * 0.5;
-        return samplePalette(palette, heat); // Glowing lava colors
-      }
-      // Dark rock with subtle variation
-      return genHsl(0 + rand() * 20, 0.1 + rand() * 0.1, 0.03 + rand() * 0.03);
-    });
-  }
-
-  // Zone Accent — smart coloring based on key type
   if (style === 'zoneaccent') {
     const accentColor = palette[0];
     const secondColor = palette[1];
-    const MODS = new Set(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','←','Enter','Space']);
+    const MODS = new Set(['Esc','Tab','Caps','Shift','Ctrl','Win','Alt','Menu','Fn','?','←','?','Enter','Space']);
     const NUMS = new Set(['1','2','3','4','5','6','7','8','9','0','-','=']);
     return KEYBOARD_LAYOUT.map(key => {
       if (MODS.has(key.name)) return accentColor;
       if (NUMS.has(key.name)) return lerpColor(accentColor, secondColor, 0.5);
-      // Alpha keys: very dim version of accent
-      return genHsl(baseHue, 0.5, 0.08 + rand() * 0.04);
+      return genHsl(baseHue, 0.28, 0.12 + rand() * 0.03);
     });
   }
 
-  // Rows/columns — snap to discrete palette stops instead of smooth gradient
-  if (direction === 'rows') {
-    return KEYBOARD_LAYOUT.map(key => {
-      const row = Math.round(key.y);
-      const t = row / 4; // 5 rows: 0, 0.25, 0.5, 0.75, 1
-      const jitter = (rand() - 0.5) * 0.03;
-      return samplePalette(palette, Math.max(0, Math.min(1, t + jitter)));
-    });
-  }
-
-  if (direction === 'columns') {
-    return KEYBOARD_LAYOUT.map(key => {
-      const col = Math.floor(key.x + key.w / 2);
-      const t = col / 14; // ~15 columns
-      const jitter = (rand() - 0.5) * 0.03;
-      return samplePalette(palette, Math.max(0, Math.min(1, t + jitter)));
-    });
-  }
-
-  // Standard gradient-based generation
   return KEYBOARD_LAYOUT.map(key => {
-    const t = getKeyT(key, direction, rand);
-    // Add subtle variation so it's not perfectly flat
-    const jitter = (rand() - 0.5) * 0.04;
-    const adjT = Math.max(0, Math.min(1, t + jitter));
+    const kx = (key.x + key.w / 2) / KB_WIDTH;
+    const ky = (key.y + key.h / 2) / KB_HEIGHT;
+    let t = getKeyT(key, direction, rand);
+    let jitter = (rand() - 0.5) * 0.015;
+
+    if (direction === 'rows') {
+      t = Math.round(key.y) / 4;
+      jitter = (rand() - 0.5) * 0.01;
+    } else if (direction === 'columns') {
+      t = Math.floor(key.x + key.w / 2) / 14;
+      jitter = (rand() - 0.5) * 0.01;
+    } else if (direction === 'checker') {
+      t = t ? 0.72 : 0.28;
+      jitter = 0;
+    } else if (direction === 'random') {
+      t = clamp01((Math.sin(kx * 9.5 + ky * 6.2 + seed * 0.00001) * 0.5 + 0.5) * 0.7 + rand() * 0.3);
+    }
+
+    if (style === 'starfield') {
+      const star = rand();
+      if (star > 0.965) return lerpColor(palette[2], palette[3], 0.75 + rand() * 0.25);
+      if (star > 0.92) return lerpColor(palette[1], palette[3], 0.35 + rand() * 0.3);
+      const deep = clamp01(0.1 + t * 0.25 + (rand() - 0.5) * 0.03);
+      return samplePalette(palette, deep);
+    }
+
+    if (style === 'matrixrain') {
+      const drip = clamp01(ky * 0.65 + Math.sin(kx * 8 + seed * 0.00003) * 0.2 + rand() * 0.15);
+      return samplePalette(palette, drip);
+    }
+
+    if (style === 'volcanic') {
+      const fissure = Math.abs(Math.sin(kx * 12.3 + ky * 5.7 + seed * 0.00002));
+      const heat = clamp01((fissure - 0.35) * 1.4 + rand() * 0.08);
+      return samplePalette(palette, heat);
+    }
+
+    if (style === 'galaxy') {
+      const cloud = clamp01(
+        (Math.sin(kx * 6.5 + ky * 4.5 + seed * 0.00004) * 0.5 + 0.5) * 0.6 +
+        (Math.sin(kx * 2.8 - ky * 9.2 + seed * 0.00002) * 0.5 + 0.5) * 0.4
+      );
+      return samplePalette(palette, cloud);
+    }
+
+    const adjT = clamp01(smooth(clamp01(t + jitter)));
     return samplePalette(palette, adjT);
   });
-}
-
-// ── Event handlers ──────────────────────────────────────────────────────────
+}// -- Event handlers ---------------------------------------------------------
 
 function applyGenerated(style, direction) {
   lastGenSeed = Date.now() + Math.floor(Math.random() * 100000);
@@ -1566,4 +1311,6 @@ applyUITheme(savedTheme);
 
 // Run check on load
 checkBrowserSupport();
+
+
 
