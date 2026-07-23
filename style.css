@@ -943,3 +943,144 @@ body {
   text-shadow: 0 0 5px var(--cyan);
 }
 
+/* ── HW Revision Modal ─────────────────────────────────────────────────────── */
+.hw-modal-content {
+  max-width: 760px !important;
+  width: 96% !important;
+  border-color: var(--yellow) !important;
+  box-shadow: 0 0 40px rgba(255,225,0,0.3), inset 0 0 15px rgba(0,0,0,0.5) !important;
+  text-align: left !important;
+}
+.hw-modal-content .modal-header {
+  color: var(--yellow) !important;
+  text-shadow: 0 0 8px var(--yellow) !important;
+  font-size: 12px !important;
+}
+.hw-modal-content .modal-body {
+  font-size: 16px;
+}
+
+/* ── Side-by-side comparison ── */
+.kb-compare {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  margin: 16px 0;
+}
+.kb-compare-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.kb-compare-divider {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 14px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  padding-top: 40px;
+}
+.kb-compare-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  letter-spacing: 1px;
+  padding: 5px 0;
+  text-align: center;
+}
+.kb-compare-label.good {
+  color: var(--green);
+  text-shadow: 0 0 8px var(--green);
+}
+.kb-compare-label.bad {
+  color: #ff4444;
+  text-shadow: 0 0 8px #ff4444;
+}
+
+/* ── Mini keyboard ── */
+.kb-mini-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.kb-mini {
+  background: #060606;
+  border: 2px solid rgba(255,255,255,0.1);
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.kb-compare-item:first-child .kb-mini {
+  border-color: rgba(0,255,136,0.35);
+  box-shadow: 0 0 14px rgba(0,255,136,0.12);
+}
+.kb-compare-item:last-child .kb-mini {
+  border-color: rgba(255,68,68,0.35);
+  box-shadow: 0 0 14px rgba(255,68,68,0.12);
+}
+.km-row {
+  display: flex;
+  gap: 2px;
+}
+.km-key {
+  flex: 1;
+  font-family: 'VT323', monospace;
+  font-size: 11px;
+  padding: 5px 2px;
+  text-align: center;
+  background: #181818;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.45);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  min-width: 0;
+}
+.km-space {
+  color: rgba(255,255,255,0.2);
+  font-size: 10px;
+}
+
+/* Highlighted Fn keys */
+.km-fn-good {
+  background: rgba(0,255,136,0.18) !important;
+  border-color: var(--green) !important;
+  color: var(--green) !important;
+  text-shadow: 0 0 6px var(--green);
+  box-shadow: 0 0 10px rgba(0,255,136,0.4), inset 0 0 6px rgba(0,255,136,0.1);
+  font-weight: bold;
+}
+.km-fn-bad {
+  background: rgba(255,68,68,0.18) !important;
+  border-color: #ff4444 !important;
+  color: #ff6666 !important;
+  text-shadow: 0 0 6px #ff4444;
+  box-shadow: 0 0 10px rgba(255,68,68,0.4), inset 0 0 6px rgba(255,68,68,0.1);
+  font-weight: bold;
+}
+
+/* Arrow labels beneath keyboards */
+.kb-fn-arrow {
+  font-family: 'VT323', monospace;
+  font-size: 13px;
+  text-align: center;
+  letter-spacing: 0.5px;
+  padding: 2px 0;
+}
+.kb-fn-arrow.good { color: var(--green); }
+.kb-fn-arrow.bad  { color: #ff6666; }
+
+/* Row label above rows */
+.km-row-label {
+  font-family: 'VT323', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  padding: 2px 4px 0;
+  letter-spacing: 0.5px;
+}
+

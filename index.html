@@ -308,6 +308,97 @@
     MADE WITH <span style="color:var(--pink)">&lt;3</span> BY <span class="accent">YASH</span> [AKA KICKTROLL]
   </div>
 
+  <!-- HW Revision Check Modal -->
+  <div class="modal-overlay" id="hw-modal-overlay">
+    <div class="modal-content hw-modal-content">
+      <div class="modal-header">!! HARDWARE REVISION CHECK !!</div>
+      <div class="modal-body">
+        <div class="vt" style="font-size:15px;margin-bottom:14px;line-height:1.5;">
+          Multiple hardware revisions of this keyboard model exist.<br>
+          Check your <span style="color:var(--yellow);text-shadow:0 0 5px var(--yellow);">BOTTOM ROW</span> against the layouts below to confirm compatibility.
+        </div>
+
+        <div class="kb-compare">
+
+          <!-- ── Supported ── -->
+          <div class="kb-compare-item">
+            <div class="kb-compare-label good">✓ SUPPORTED</div>
+            <div class="kb-mini-wrap">
+              <div class="kb-mini">
+                <div class="km-row-label">NUM ROW (for reference)</div>
+                <div class="km-row">
+                  <div class="km-key" style="flex:1.25">Esc</div>
+                  <div class="km-key" style="flex:1">1</div>
+                  <div class="km-key" style="flex:1">2</div>
+                  <div class="km-key" style="flex:1">3</div>
+                  <div class="km-key" style="flex:1">…</div>
+                  <div class="km-key" style="flex:2">⌫ Bksp</div>
+                </div>
+                <div class="km-row-label" style="margin-top:2px;">BOTTOM ROW</div>
+                <div class="km-row">
+                  <div class="km-key" style="flex:1.25">Ctrl</div>
+                  <div class="km-key" style="flex:1.25">Win</div>
+                  <div class="km-key" style="flex:1.25">Alt</div>
+                  <div class="km-key km-space" style="flex:6.25">Space</div>
+                  <div class="km-key" style="flex:1.25">Alt</div>
+                  <div class="km-key" style="flex:1">☰</div>
+                  <div class="km-key" style="flex:1.25">Ctrl</div>
+                  <div class="km-key km-fn-good" style="flex:1.5">Fn</div>
+                </div>
+              </div>
+              <div class="kb-fn-arrow good">▲ Fn key is in the BOTTOM-RIGHT corner</div>
+            </div>
+          </div>
+
+          <div class="kb-compare-divider">VS</div>
+
+          <!-- ── Not Supported ── -->
+          <div class="kb-compare-item">
+            <div class="kb-compare-label bad">✗ NOT SUPPORTED</div>
+            <div class="kb-mini-wrap">
+              <div class="kb-mini">
+                <div class="km-row-label">NUM ROW (for reference)</div>
+                <div class="km-row">
+                  <div class="km-key" style="flex:1.25">Esc</div>
+                  <div class="km-key" style="flex:1">1</div>
+                  <div class="km-key" style="flex:1">2</div>
+                  <div class="km-key" style="flex:1">3</div>
+                  <div class="km-key" style="flex:1">…</div>
+                  <div class="km-key" style="flex:2">⌫ Bksp</div>
+                </div>
+                <div class="km-row-label" style="margin-top:2px;">BOTTOM ROW</div>
+                <div class="km-row">
+                  <div class="km-key" style="flex:1.25">Ctrl</div>
+                  <div class="km-key" style="flex:1.25">Win</div>
+                  <div class="km-key" style="flex:1.25">Alt</div>
+                  <div class="km-key km-space" style="flex:6.25">Space</div>
+                  <div class="km-key" style="flex:1.25">Alt</div>
+                  <div class="km-key km-fn-bad" style="flex:1.25">Fn</div>
+                  <div class="km-key" style="flex:1.25">💡</div>
+                  <div class="km-key" style="flex:1.25">Ctrl</div>
+                </div>
+              </div>
+              <div class="kb-fn-arrow bad">▲ Fn is before 💡, left of RIGHT CTRL — not supported</div>
+            </div>
+          </div>
+
+        </div><!-- /.kb-compare -->
+
+        <div class="vt" style="font-size:13px;color:var(--dim);line-height:1.6;margin-top:4px;">
+          If your Fn key is NOT in the bottom-right corner, RGB commands may not work correctly with your revision.
+        </div>
+      </div><!-- /.modal-body -->
+
+      <div class="modal-footer">
+        <label class="modal-checkbox-label">
+          <input type="checkbox" id="hw-modal-dont-show">
+          <span class="vt">DON'T SHOW THIS AGAIN</span>
+        </label>
+        <button class="modal-close-btn" id="hw-modal-close-btn">[ UNDERSTOOD ]</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Browser Support Modal -->
   <div class="modal-overlay" id="browser-modal-overlay">
     <div class="modal-content">

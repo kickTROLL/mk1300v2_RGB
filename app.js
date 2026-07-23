@@ -1309,7 +1309,26 @@ themeSwatches.forEach(swatch => {
 const savedTheme = localStorage.getItem(THEME_KEY) || 'default';
 applyUITheme(savedTheme);
 
-// Run check on load
+// ── HW Revision Check Modal ───────────────────────────────────────────────────
+const hwModalOverlay  = document.getElementById('hw-modal-overlay');
+const hwModalClose    = document.getElementById('hw-modal-close-btn');
+const hwModalDontShow = document.getElementById('hw-modal-dont-show');
+const HW_MODAL_KEY    = 'mk1300_hide_hw_modal';
+
+function checkHWRevision() {
+  if (localStorage.getItem(HW_MODAL_KEY) === 'true') return;
+  hwModalOverlay.classList.add('active');
+}
+
+hwModalClose.addEventListener('click', () => {
+  if (hwModalDontShow.checked) {
+    localStorage.setItem(HW_MODAL_KEY, 'true');
+  }
+  hwModalOverlay.classList.remove('active');
+});
+
+// Run checks on load — HW revision first, then browser compatibility
+checkHWRevision();
 checkBrowserSupport();
 
 
