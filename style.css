@@ -524,7 +524,8 @@ body {
 .tab-toggle-wrap {
   display: flex;
   align-items: center;
-  padding: 0 16px;
+  align-self: stretch;
+  padding: 0 14px;
   border-left: 2px solid var(--dim);
   background: var(--bg2);
   flex-shrink: 0;
@@ -539,13 +540,15 @@ body {
   cursor: pointer;
   user-select: none;
   letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 .tab-toggle-wrap input[type="checkbox"] {
   accent-color: var(--cyan);
   cursor: pointer;
+  flex-shrink: 0;
   margin: 0;
-  width: 12px;
-  height: 12px;
+  width: 11px;
+  height: 11px;
 }
 .tab-toggle-wrap input[type="checkbox"]:checked + span {
   color: var(--cyan);

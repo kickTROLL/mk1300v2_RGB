@@ -398,15 +398,10 @@ audioVizBtn.addEventListener('click', toggleAudioViz);
 userLightToggle.addEventListener('change', async () => {
   userLightMode = userLightToggle.checked ? 20 : 16;
   
-  // Update hardware tab dropdown select option for UserLight
+  // Update the visible label on the UserLight option in the HW dropdown (cosmetic only)
   const opt = document.getElementById('hw-mode-userlight');
   if (opt) {
-    const wasSelected = (hwMode.value === '16' || hwMode.value === '20');
-    opt.value = userLightMode.toString();
     opt.textContent = `${userLightMode}: UserLight`;
-    if (wasSelected) {
-      hwMode.value = userLightMode.toString();
-    }
   }
   
   saveSettings();
@@ -487,7 +482,9 @@ hwSwatches.addEventListener('click', (e) => {
 
 async function updateHardwareLight() {
   if (!driver.connected || currentTab !== 'hardware') return;
-  const mode = parseInt(hwMode.value, 10);
+  let mode = parseInt(hwMode.value, 10);
+  // If the UserLight slot is selected, use the current userLightMode (16 or 20)
+  if (mode === 16 || mode === 20) mode = userLightMode;
   const speed = parseInt(hwSpeed.value, 10);
   const bright = parseInt(hwBright.value, 10);
   
@@ -1250,9 +1247,9 @@ function loadSettings() {
       userLightToggle.checked = s.hwRev20;
     }
     userLightMode = userLightToggle.checked ? 20 : 16;
+    // Update UserLight option label (cosmetic only — value stays '16' to keep select stable)
     const opt = document.getElementById('hw-mode-userlight');
     if (opt) {
-      opt.value = userLightMode.toString();
       opt.textContent = `${userLightMode}: UserLight`;
     }
 
@@ -1267,13 +1264,7 @@ function loadSettings() {
       bVal.textContent = s.brightness;
     }
     
-    if (s.hwMode) {
-      let targetHwMode = s.hwMode;
-      if (targetHwMode === '16' || targetHwMode === '20') {
-        targetHwMode = userLightMode.toString();
-      }
-      hwMode.value = targetHwMode;
-    }
+    if (s.hwMode) hwMode.value = s.hwMode;
     if (s.hwSpeed) {
       hwSpeed.value = s.hwSpeed;
       hwSpeedVal.textContent = s.hwSpeed;
