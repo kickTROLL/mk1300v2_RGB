@@ -83,6 +83,12 @@
         <button id="tab-software" class="pixel-tab active">[ SOFTWARE SYNC ]</button>
         <button id="tab-hardware" class="pixel-tab">[ HARDWARE FX ]</button>
         <button id="tab-custom" class="pixel-tab">[ CUSTOM PRESET ]</button>
+        <div class="tab-toggle-wrap">
+          <label class="custom-toggle-label">
+            <input type="checkbox" id="userlight-toggle">
+            <span>REV 2.0 (MODE 20)</span>
+          </label>
+        </div>
       </div>
 
       <div id="software-panel" class="panel active">
@@ -117,7 +123,7 @@
               <option value="13">13: TrigSingle</option>
               <option value="14">14: Soduko</option>
               <option value="15">15: Tide</option>
-              <option value="16">16: UserLight</option>
+              <option value="16" id="hw-mode-userlight">16: UserLight</option>
 
             </select>
           </div>

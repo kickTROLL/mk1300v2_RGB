@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kicktroll — projects</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:   #060412;
+      --pink: #ff2d78;
+      --cyan: #00f5ff;
+      --yellow: #ffe100;
+      --green: #00ff88;
+      --text: #e8d8ff;
+      --dim:  #5a4480;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Press Start 2P', monospace;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    /* Scanlines */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 999; pointer-events: none;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 3px
+      );
+    }
+
+    /* Grid bg */
+    body::after {
+      content: '';
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image:
+        linear-gradient(rgba(255,45,120,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,45,120,0.05) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    .wrapper {
+      position: relative; z-index: 1;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+    }
+
+    /* Glowing title */
+    .title {
+      font-size: clamp(22px, 4vw, 42px);
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan), 0 0 40px rgba(0,245,255,0.35);
+      letter-spacing: 4px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .title .at { color: var(--dim); }
+    .title .name { color: var(--pink); text-shadow: 0 0 10px var(--pink), 0 0 40px rgba(255,45,120,0.35); }
+
+    @keyframes blink { 0%,49%{opacity:1} 50%,100%{opacity:0} }
+    .cursor { color: var(--green); animation: blink 1s step-end infinite; }
+
+    /* Subtitle */
+    .sub {
+      font-family: 'VT323', monospace;
+      font-size: clamp(16px, 2.5vw, 22px);
+      color: var(--dim);
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    /* CRT card around the button */
+    .card {
+      border: 3px solid var(--cyan);
+      padding: 30px 40px;
+      background: rgba(0,0,0,0.6);
+      box-shadow: 0 0 0 1px #000,
+                  0 0 30px rgba(0,245,255,0.3),
+                  inset 0 0 20px rgba(0,0,0,0.8);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .card-label {
+      font-family: 'VT323', monospace;
+      font-size: 18px;
+      color: var(--dim);
+      letter-spacing: 2px;
+    }
+
+    /* The big button */
+    .launch-btn {
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(10px, 1.5vw, 14px);
+      color: var(--yellow);
+      background: transparent;
+      border: 3px solid var(--yellow);
+      padding: 16px 28px;
+      cursor: pointer;
+      letter-spacing: 2px;
+      text-decoration: none;
+      display: inline-block;
+      box-shadow: 5px 5px 0 rgba(255,225,0,0.25);
+      transition: none;
+      white-space: nowrap;
+    }
+    .launch-btn:hover {
+      background: rgba(255,225,0,0.1);
+      box-shadow: 6px 6px 0 rgba(255,225,0,0.45), 0 0 20px rgba(255,225,0,0.3);
+      color: #fff;
+    }
+    .launch-btn:active {
+      transform: translate(3px, 3px);
+      box-shadow: 2px 2px 0 rgba(255,225,0,0.3);
+    }
+
+    /* Arrow blink */
+    @keyframes arr { 0%,100%{transform:translateX(0)} 50%{transform:translateX(5px)} }
+    .arr { display: inline-block; animation: arr 0.8s ease-in-out infinite; }
+
+    /* Footer */
+    .footer {
+      font-family: 'VT323', monospace;
+      font-size: 14px;
+      color: var(--dim);
+      letter-spacing: 1px;
+    }
+    .footer a { color: var(--pink); text-decoration: none; }
+    .footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="title">
+      <span class="at">> </span><span class="name">KICKTROLL</span><span class="cursor">_</span>
+    </div>
+
+    <div class="sub">// PROJECTS &amp; TOOLS</div>
+
+    <div class="card">
+      <div class="card-label">[ FEATURED PROJECT ]</div>
+      <a class="launch-btn" href="https://kicktroll.github.io/mk1300v2_RGB" target="_blank">
+        ⌨️ MK1300 V2 RGB TOOL <span class="arr">→</span>
+      </a>
+      <div style="font-family:'VT323',monospace;font-size:14px;color:var(--dim);text-align:center;line-height:1.7">
+        90 RGB patterns · WebHID · 60% keyboard<br>Chrome / Edge only
+      </div>
+    </div>
+
+    <div class="footer">
+      <a href="https://github.com/kicktroll" target="_blank">github.com/kicktroll</a>
+    </div>
+  </div>
+</body>
+</html>

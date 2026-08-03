@@ -13,6 +13,7 @@ let currentColors  = [];
 let activeCat      = 'all';
 let sendPending    = false;
 let currentTab     = 'software';
+let userLightMode  = 16;
 
 // ── Categories ───────────────────────────────────────────────────────────────
 const CATEGORIES = [
@@ -95,6 +96,8 @@ const bVal          = document.getElementById('brightness-val');
 const patternName   = document.getElementById('pattern-name');
 const catStrip      = document.getElementById('cat-strip');
 const patternCount  = document.getElementById('pattern-count');
+
+const userLightToggle = document.getElementById('userlight-toggle');
 
 // Hardware UI elements
 const tabSoftware   = document.getElementById('tab-software');
@@ -365,12 +368,12 @@ async function connectDevice() {
     audioVizBtn.style.display = 'block';
     try {
       if (currentTab === 'software') {
-        // mode 16 is Custom Mode (UserLight) 
-        await driver.setHardwareAnimation(16, 4);
+        // mode 16 or 20 is Custom Mode (UserLight) 
+        await driver.setHardwareAnimation(userLightMode, 4);
         log('OK: custom RGB mode active');
         await applyPattern(currentPattern, true);
       } else if (currentTab === 'custom') {
-        await driver.setHardwareAnimation(16, 4);
+        await driver.setHardwareAnimation(userLightMode, 4);
         log('OK: custom RGB mode active');
         buildCustomKeyboard();
         await pushCustomToHW();
@@ -391,6 +394,41 @@ async function connectDevice() {
 // ── Events ────────────────────────────────────────────────────────────────────
 connectBtn.addEventListener('click', connectDevice);
 audioVizBtn.addEventListener('click', toggleAudioViz);
+
+userLightToggle.addEventListener('change', async () => {
+  userLightMode = userLightToggle.checked ? 20 : 16;
+  
+  // Update hardware tab dropdown select option for UserLight
+  const opt = document.getElementById('hw-mode-userlight');
+  if (opt) {
+    const wasSelected = (hwMode.value === '16' || hwMode.value === '20');
+    opt.value = userLightMode.toString();
+    opt.textContent = `${userLightMode}: UserLight`;
+    if (wasSelected) {
+      hwMode.value = userLightMode.toString();
+    }
+  }
+  
+  saveSettings();
+  
+  // Re-apply settings if currently connected to device
+  if (driver.connected) {
+    try {
+      if (currentTab === 'software') {
+        await driver.setHardwareAnimation(userLightMode, 4);
+        await applyPattern(currentPattern, true);
+      } else if (currentTab === 'custom') {
+        await driver.setHardwareAnimation(userLightMode, 4);
+        await pushCustomToHW();
+      } else if (currentTab === 'hardware') {
+        await updateHardwareLight();
+      }
+    } catch(e) {
+      log('ERR: ' + e.message);
+    }
+  }
+});
+
 bSlider.addEventListener('input', () => {
   bVal.textContent = bSlider.value;
   applyPattern(currentPattern, driver.connected);
@@ -482,11 +520,11 @@ function switchTab(tab) {
 
   if (driver.connected) {
     if (tab === 'software') {
-      driver.setHardwareAnimation(16, 4).then(() => applyPattern(currentPattern, true));
+      driver.setHardwareAnimation(userLightMode, 4).then(() => applyPattern(currentPattern, true));
     } else if (tab === 'hardware') {
       updateHardwareLight();
     } else if (tab === 'custom') {
-      driver.setHardwareAnimation(16, 4).then(() => {
+      driver.setHardwareAnimation(userLightMode, 4).then(() => {
         buildCustomKeyboard();
         pushCustomToHW();
       });
@@ -1196,7 +1234,8 @@ function saveSettings() {
     customColors,
     paintColor,
     customAutoPush: customAutoPush.checked,
-    customBrightness: customBrightSlider.value
+    customBrightness: customBrightSlider.value,
+    hwRev20: userLightToggle.checked
   };
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
 }
@@ -1207,6 +1246,16 @@ function loadSettings() {
   try {
     const s = JSON.parse(raw);
     
+    if (s.hwRev20 !== undefined) {
+      userLightToggle.checked = s.hwRev20;
+    }
+    userLightMode = userLightToggle.checked ? 20 : 16;
+    const opt = document.getElementById('hw-mode-userlight');
+    if (opt) {
+      opt.value = userLightMode.toString();
+      opt.textContent = `${userLightMode}: UserLight`;
+    }
+
     if (s.currentTab) currentTab = s.currentTab;
     if (s.activeCat) activeCat = s.activeCat;
     if (s.currentPatternId) {
@@ -1218,7 +1267,13 @@ function loadSettings() {
       bVal.textContent = s.brightness;
     }
     
-    if (s.hwMode) hwMode.value = s.hwMode;
+    if (s.hwMode) {
+      let targetHwMode = s.hwMode;
+      if (targetHwMode === '16' || targetHwMode === '20') {
+        targetHwMode = userLightMode.toString();
+      }
+      hwMode.value = targetHwMode;
+    }
     if (s.hwSpeed) {
       hwSpeed.value = s.hwSpeed;
       hwSpeedVal.textContent = s.hwSpeed;

@@ -521,6 +521,37 @@ body {
   margin-bottom: -2px;
   text-shadow: 0 0 6px var(--cyan);
 }
+.tab-toggle-wrap {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-left: 2px solid var(--dim);
+  background: var(--bg2);
+  flex-shrink: 0;
+}
+.tab-toggle-wrap label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--dim);
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.5px;
+}
+.tab-toggle-wrap input[type="checkbox"] {
+  accent-color: var(--cyan);
+  cursor: pointer;
+  margin: 0;
+  width: 12px;
+  height: 12px;
+}
+.tab-toggle-wrap input[type="checkbox"]:checked + span {
+  color: var(--cyan);
+  text-shadow: 0 0 6px var(--cyan);
+}
+
 
 .panel {
   display: none;
